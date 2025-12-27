@@ -27,6 +27,17 @@
     }
   }
   
+  @keyframes slideInFromRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
   @keyframes pulse-ring {
     0%, 100% {
       transform: scale(1);
@@ -242,5 +253,9 @@
   
   .text-card-black {
     color: #1f2937;
+  }
+  
+  .animate-slideInFromRight {
+    animation: slideInFromRight 0.3s ease-out;
   }
 }

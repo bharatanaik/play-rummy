@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Player } from '../model';
 
 interface PlayerAvatarProps {
@@ -7,6 +8,8 @@ interface PlayerAvatarProps {
 }
 
 export default function PlayerAvatar({ player, isCurrentTurn, cardCount }: PlayerAvatarProps) {
+    const [imageError, setImageError] = useState(false);
+
     // Get initials from name
     const getInitials = (name: string | null) => {
         if (!name) return '?';
@@ -17,8 +20,29 @@ export default function PlayerAvatar({ player, isCurrentTurn, cardCount }: Playe
         return name.substring(0, 2).toUpperCase();
     };
 
+    // Get consistent color based on user ID
+    const getAvatarColor = (uid: string | null) => {
+        if (!uid) return 'bg-gray-500';
+        const colors = [
+            'bg-blue-500', 
+            'bg-green-500', 
+            'bg-purple-500', 
+            'bg-pink-500', 
+            'bg-yellow-500', 
+            'bg-red-500',
+            'bg-indigo-500',
+            'bg-teal-500',
+            'bg-orange-500',
+            'bg-cyan-500'
+        ];
+        const hash = uid.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        return colors[hash % colors.length];
+    };
+
     const initials = getInitials(player.name);
     const displayName = player.name || 'Player';
+    const avatarColor = getAvatarColor(player.uid);
+    const shouldShowImage = player.photoURL && !imageError;
 
     return (
         <div
@@ -29,10 +53,11 @@ export default function PlayerAvatar({ player, isCurrentTurn, cardCount }: Playe
         >
             {/* Avatar with card count badge */}
             <div className="relative">
-                {player.photoURL ? (
+                {shouldShowImage ? (
                     <img
-                        src={player.photoURL}
+                        src={player.photoURL!}
                         alt={displayName}
+                        onError={() => setImageError(true)}
                         className={`
                             w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full border-2
                             ${isCurrentTurn ? 'border-green-400 ring-2 ring-green-300' : 'border-gray-300'}
@@ -43,10 +68,11 @@ export default function PlayerAvatar({ player, isCurrentTurn, cardCount }: Playe
                         className={`
                             w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full 
                             flex items-center justify-center font-bold text-white
-                            ${isCurrentTurn ? 'bg-green-600 border-2 border-green-400' : 'bg-gray-600 border-2 border-gray-400'}
+                            ${avatarColor}
+                            ${isCurrentTurn ? 'border-2 border-green-400 ring-2 ring-green-300' : 'border-2 border-gray-300'}
                         `}
                     >
-                        {initials}
+                        <span className="text-base sm:text-lg md:text-xl">{initials}</span>
                     </div>
                 )}
                 
