@@ -19,9 +19,11 @@ export default function HandBar({ hand, selectedCardId, onCardSelect, onReorder 
         e.dataTransfer.setData('cardId', cardId);
         e.dataTransfer.setData('sourceIndex', index.toString());
         e.dataTransfer.setData('source', 'hand');
+        console.log('[DRAG] Drag started for card:', cardId, 'at index:', index);
     };
 
     const handleDragEnd = () => {
+        console.log('[DRAG] Drag ended, clearing state');
         setDraggedCardId(null);
         setDragOverIndex(null);
     };
@@ -34,23 +36,32 @@ export default function HandBar({ hand, selectedCardId, onCardSelect, onReorder 
 
     const handleDrop = (e: React.DragEvent, dropIndex: number) => {
         e.preventDefault();
-        const cardId = e.dataTransfer.getData('cardId');
-        const sourceIndexStr = e.dataTransfer.getData('sourceIndex');
-        const source = e.dataTransfer.getData('source');
         
-        // Only handle reordering within hand
-        if (source === 'hand' && cardId && sourceIndexStr && onReorder) {
-            const sourceIndex = parseInt(sourceIndexStr, 10);
-            if (sourceIndex !== dropIndex) {
-                const newHand = [...hand];
-                const [movedCard] = newHand.splice(sourceIndex, 1);
-                newHand.splice(dropIndex, 0, movedCard);
-                onReorder(newHand);
+        try {
+            const cardId = e.dataTransfer.getData('cardId');
+            const sourceIndexStr = e.dataTransfer.getData('sourceIndex');
+            const source = e.dataTransfer.getData('source');
+            
+            console.log('[DRAG] Drop event - cardId:', cardId, 'source:', source, 'sourceIndex:', sourceIndexStr, 'dropIndex:', dropIndex);
+            
+            // Only handle reordering within hand
+            if (source === 'hand' && cardId && sourceIndexStr && onReorder) {
+                const sourceIndex = parseInt(sourceIndexStr, 10);
+                if (sourceIndex !== dropIndex) {
+                    const newHand = [...hand];
+                    const [movedCard] = newHand.splice(sourceIndex, 1);
+                    newHand.splice(dropIndex, 0, movedCard);
+                    console.log('[DRAG] Reordering hand from index', sourceIndex, 'to', dropIndex);
+                    onReorder(newHand);
+                }
             }
+        } catch (error) {
+            console.error('[DRAG] Error during drop:', error);
+        } finally {
+            // Always clean up drag state
+            setDragOverIndex(null);
+            setDraggedCardId(null);
         }
-        
-        setDragOverIndex(null);
-        setDraggedCardId(null);
     };
 
     return (

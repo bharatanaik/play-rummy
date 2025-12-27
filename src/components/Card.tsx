@@ -26,6 +26,7 @@ const suitColors: Record<string, string> = {
 };
 
 export default function Card({
+    id,
     suit,
     rank,
     isPrintedJoker,
@@ -37,6 +38,17 @@ export default function Card({
     onDragEnd,
     draggable = false,
 }: CardProps) {
+    // Validation: Check for invalid card data
+    if (!id || !suit || !rank) {
+        console.error('[CARD] ERROR: Invalid card data:', { id, suit, rank });
+        // Return error card instead of null
+        return (
+            <div className="card-base card-mini bg-red-100 border-red-500 flex items-center justify-center">
+                <div className="text-red-600 text-xs font-bold">ERROR</div>
+            </div>
+        );
+    }
+
     const sizeClass = size === 'mini' ? 'card-mini' : 'card-small';
     const colorClass = suitColors[suit] || 'text-gray-800';
     

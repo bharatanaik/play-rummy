@@ -145,15 +145,18 @@ export default function Game() {
         const cardId = e.dataTransfer.getData('cardId');
         const source = e.dataTransfer.getData('source');
         
+        console.log('[DISCARD] Drop event - cardId:', cardId, 'source:', source);
+        
         // Only allow discarding from hand
         if (source === 'hand' && cardId && gameId && player?.uid) {
             try {
                 setError(null);
+                console.log('[DISCARD] Attempting to discard via drag-drop');
                 await gameService.discard(gameId, player.uid, cardId);
                 setSelectedCardId(null);
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to discard card');
-                console.error(err);
+                console.error('[DISCARD] ERROR:', err);
             }
         }
     };
@@ -197,7 +200,7 @@ export default function Game() {
     const isMyTurn = gameState.currentTurn === player.uid;
     const hasDrawn = currentPlayer?.hasDrawn || false;
     const playerHand = currentPlayer?.hand || [];
-    const topOpenCard = gameState.openPile[gameState.openPile.length - 1];
+    const topOpenCard = gameState.openPile.at(-1);
 
     return (
         <div className="game-table pb-32">
