@@ -6,6 +6,7 @@ import type { GameState } from "../model";
 import Card from "../components/Card";
 import HandBar from "../components/HandBar";
 import ActionBar from "../components/ActionBar";
+import PlayerList from "../components/PlayerList";
 
 // Card back component for closed pile
 const CardBack = () => (
@@ -22,6 +23,7 @@ export default function Game() {
     const [gameState, setGameState] = useState<GameState | null>(null);
     const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [isDragOverDiscard, setIsDragOverDiscard] = useState(false);
 
     // Guard: must be authenticated and have a gameId
     useEffect(() => {
@@ -102,6 +104,49 @@ export default function Game() {
         setSelectedCardId(cardId === selectedCardId ? null : cardId);
     };
 
+    // Handle drag-to-discard
+    const handleDiscardDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        const source = e.dataTransfer.types.includes('text/plain') || e.dataTransfer.effectAllowed === 'move';
+        if (source) {
+            e.dataTransfer.dropEffect = 'move';
+            setIsDragOverDiscard(true);
+        }
+    };
+
+    const handleDiscardDragLeave = () => {
+        setIsDragOverDiscard(false);
+    };
+
+    const handleDiscardDrop = async (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragOverDiscard(false);
+        
+        const cardId = e.dataTransfer.getData('cardId');
+        const source = e.dataTransfer.getData('source');
+        
+        // Only allow discarding from hand
+        if (source === 'hand' && cardId && gameId && player?.uid) {
+            try {
+                setError(null);
+                await gameService.discard(gameId, player.uid, cardId);
+                setSelectedCardId(null);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'Failed to discard card');
+                console.error(err);
+            }
+        }
+    };
+
+    // Handle hand reordering (local only - not synced to server)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const handleHandReorder = (_reorderedHand: typeof playerHand) => {
+        // Note: Hand reordering is currently local-only and not persisted
+        // The server maintains the canonical order
+        // Future enhancement: Could save preference to localStorage if needed
+        console.log('Hand reordered locally');
+    };
+
     if (!player || !gameId) return null;
 
     if (!gameState) {
@@ -120,83 +165,103 @@ export default function Game() {
 
     return (
         <div className="game-table pb-32">
-            {/* Header */}
-            <div className="bg-green-900/80 text-white p-4 shadow-lg">
-                <div className="flex justify-between items-center">
-                    <div>
-                        <h1 className="text-xl font-bold">Indian Rummy</h1>
-                        <p className="text-sm opacity-90">Game ID: {gameId}</p>
+            <div className="max-w-7xl mx-auto">
+                {/* Header */}
+                <div className="bg-green-900/80 text-white p-4 shadow-lg">
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <h1 className="text-xl font-bold">Indian Rummy</h1>
+                            <p className="text-sm opacity-90">Game ID: {gameId}</p>
+                        </div>
+                        {gameState.wildJokerRank && (
+                            <div className="text-center bg-yellow-500 text-black px-3 py-1 rounded-lg">
+                                <div className="text-xs font-semibold">Wild Joker</div>
+                                <div className="text-lg font-bold">{gameState.wildJokerRank}</div>
+                            </div>
+                        )}
                     </div>
-                    {gameState.wildJokerRank && (
-                        <div className="text-center bg-yellow-500 text-black px-3 py-1 rounded-lg">
-                            <div className="text-xs font-semibold">Wild Joker</div>
-                            <div className="text-lg font-bold">{gameState.wildJokerRank}</div>
+                </div>
+
+                {/* Player List */}
+                <PlayerList players={gameState.players} currentTurn={gameState.currentTurn} />
+
+                {/* Turn Indicator */}
+                <div className="p-4">
+                    {isMyTurn ? (
+                        <div className="bg-green-500 text-white px-4 py-2 rounded-lg text-center font-bold">
+                            🎮 Your Turn
+                        </div>
+                    ) : (
+                        <div className="bg-gray-700 text-white px-4 py-2 rounded-lg text-center">
+                            ⏳ Waiting for other player...
                         </div>
                     )}
                 </div>
-            </div>
 
-            {/* Turn Indicator */}
-            <div className="p-4">
-                {isMyTurn ? (
-                    <div className="bg-green-500 text-white px-4 py-2 rounded-lg text-center font-bold">
-                        🎮 Your Turn
-                    </div>
-                ) : (
-                    <div className="bg-gray-700 text-white px-4 py-2 rounded-lg text-center">
-                        ⏳ Waiting for other player...
+                {/* Error Message */}
+                {error && (
+                    <div className="mx-4 mb-4 bg-red-500 text-white px-4 py-2 rounded-lg">
+                        {error}
                     </div>
                 )}
-            </div>
 
-            {/* Error Message */}
-            {error && (
-                <div className="mx-4 mb-4 bg-red-500 text-white px-4 py-2 rounded-lg">
-                    {error}
-                </div>
-            )}
-
-            {/* Game Area: Closed and Open Piles */}
-            <div className="flex justify-center gap-8 p-8">
-                {/* Closed Pile */}
-                <div className="text-center">
-                    <div className="text-white font-semibold mb-2">Closed Pile</div>
-                    <div className="relative">
-                        <CardBack />
-                        <div className="absolute -top-1 -left-1 opacity-50">
+                {/* Game Area: Closed and Open Piles */}
+                <div className="flex justify-center gap-8 p-8">
+                    {/* Closed Pile */}
+                    <div className="text-center">
+                        <div className="text-white font-semibold mb-2">Closed Pile</div>
+                        <div className="relative">
                             <CardBack />
+                            <div className="absolute -top-1 -left-1 opacity-50">
+                                <CardBack />
+                            </div>
+                            <div className="absolute -top-2 -left-2 opacity-30">
+                                <CardBack />
+                            </div>
                         </div>
-                        <div className="absolute -top-2 -left-2 opacity-30">
-                            <CardBack />
+                        <div className="text-white text-sm mt-2">
+                            {gameState.closedPile.length} cards
                         </div>
                     </div>
-                    <div className="text-white text-sm mt-2">
-                        {gameState.closedPile.length} cards
+
+                    {/* Open Pile - Drop Zone for Discard */}
+                    <div className="text-center">
+                        <div className="text-white font-semibold mb-2">Open Pile (Discard Here)</div>
+                        <div
+                            className={`
+                                relative transition-all duration-200
+                                ${isDragOverDiscard ? 'scale-110 ring-4 ring-yellow-400' : ''}
+                            `}
+                            onDragOver={handleDiscardDragOver}
+                            onDragLeave={handleDiscardDragLeave}
+                            onDrop={handleDiscardDrop}
+                        >
+                            {topOpenCard ? (
+                                <Card {...topOpenCard} size="small" />
+                            ) : (
+                                <div className="card-small bg-gray-700 border-gray-600 flex items-center justify-center">
+                                    <div className="text-white text-sm">Empty</div>
+                                </div>
+                            )}
+                            {isDragOverDiscard && (
+                                <div className="absolute inset-0 bg-yellow-400/30 rounded-lg flex items-center justify-center">
+                                    <div className="text-white font-bold text-lg">Drop to Discard</div>
+                                </div>
+                            )}
+                        </div>
+                        <div className="text-white text-sm mt-2">
+                            {gameState.openPile.length} cards
+                        </div>
                     </div>
                 </div>
 
-                {/* Open Pile */}
-                <div className="text-center">
-                    <div className="text-white font-semibold mb-2">Open Pile</div>
-                    {topOpenCard ? (
-                        <Card {...topOpenCard} size="small" />
-                    ) : (
-                        <div className="card-small bg-gray-700 border-gray-600 flex items-center justify-center">
-                            <div className="text-white text-sm">Empty</div>
+                {/* Player Info */}
+                <div className="px-4 pb-4">
+                    <div className="bg-white/90 rounded-lg p-3 shadow">
+                        <div className="text-sm text-gray-600">Your Hand ({playerHand.length} cards)</div>
+                        <div className="text-xs text-gray-500 mt-1">
+                            {hasDrawn ? '✓ Drawn - Select a card to discard' : 'Draw a card to continue'}
                         </div>
-                    )}
-                    <div className="text-white text-sm mt-2">
-                        {gameState.openPile.length} cards
-                    </div>
-                </div>
-            </div>
-
-            {/* Player Info */}
-            <div className="px-4 pb-4">
-                <div className="bg-white/90 rounded-lg p-3 shadow">
-                    <div className="text-sm text-gray-600">Your Hand ({playerHand.length} cards)</div>
-                    <div className="text-xs text-gray-500 mt-1">
-                        {hasDrawn ? '✓ Drawn - Select a card to discard' : 'Draw a card to continue'}
                     </div>
                 </div>
             </div>
@@ -206,6 +271,7 @@ export default function Game() {
                 hand={playerHand}
                 selectedCardId={selectedCardId}
                 onCardSelect={handleCardSelect}
+                onReorder={handleHandReorder}
             />
 
             {/* Action Bar - Fixed at bottom */}

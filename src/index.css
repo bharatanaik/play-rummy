@@ -5,6 +5,38 @@
     min-height: 100vh;
     background-color: #f9fafb;
   }
+  
+  /* Animation keyframes */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes slideInFromBottom {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes pulse-ring {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 0.5;
+    }
+  }
 }
 
 @layer components {
@@ -69,13 +101,51 @@
   }
   
   .card-mini {
-    width: 3.5rem;
-    height: 5rem;
+    /* Mobile-first: smaller cards to fit 13 cards */
+    width: 2.75rem;  /* 44px - fits ~13 cards on 360px screen */
+    height: 4rem;    /* 64px */
+  }
+  
+  /* Responsive card sizing */
+  @media (min-width: 640px) {
+    .card-mini {
+      width: 3.5rem;  /* 56px */
+      height: 5rem;   /* 80px */
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .card-mini {
+      width: 4rem;    /* 64px */
+      height: 5.5rem; /* 88px */
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .card-mini {
+      width: 5rem;    /* 80px */
+      height: 7rem;   /* 112px */
+    }
   }
   
   .card-small {
     width: 4rem;
     height: 6rem;
+  }
+  
+  /* Responsive small card sizing */
+  @media (min-width: 640px) {
+    .card-small {
+      width: 4.5rem;
+      height: 6.5rem;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .card-small {
+      width: 5rem;
+      height: 7.5rem;
+    }
   }
   
   .card-selected {
@@ -85,10 +155,16 @@
     transform: translateY(-0.5rem);
   }
   
+  .card-dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+  }
+  
   /* Game Table */
   .game-table {
     min-height: 100vh;
     background: linear-gradient(to bottom, #0a5c3a, #065f46);
+    animation: fadeIn 0.5s ease-out;
   }
   
   /* Fixed Bottom Bars */
@@ -99,6 +175,18 @@
     right: 0;
     background: linear-gradient(to top, rgba(17, 24, 39, 0.95), transparent);
     padding: 0.75rem 0.5rem;
+    animation: slideInFromBottom 0.4s ease-out;
+  }
+  
+  /* Center hand bar on desktop with max width */
+  @media (min-width: 1024px) {
+    .hand-bar {
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: 80rem;
+      right: auto;
+      width: 100%;
+    }
   }
   
   .action-bar {
@@ -109,6 +197,18 @@
     background-color: white;
     border-top: 1px solid #d1d5db;
     box-shadow: 0 -10px 15px -3px rgb(0 0 0 / 0.1);
+    animation: slideInFromBottom 0.3s ease-out;
+  }
+  
+  /* Center action bar on desktop with max width */
+  @media (min-width: 1024px) {
+    .action-bar {
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: 80rem;
+      right: auto;
+      width: 100%;
+    }
   }
 }
 
