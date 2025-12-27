@@ -9,7 +9,7 @@ import ActionBar from "../components/ActionBar";
 
 // Card back component for closed pile
 const CardBack = () => (
-    <div className="card-small bg-blue-900 border-blue-700 flex items-center justify-center">
+    <div className="card-base card-small bg-blue-900 border-blue-700 flex items-center justify-center">
         <div className="text-white text-2xl">🂠</div>
     </div>
 );

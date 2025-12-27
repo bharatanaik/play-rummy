@@ -3,6 +3,7 @@ import type { Card, Meld, Rank } from '../model';
 class ValidationService {
     /**
      * Get the numeric value of a rank for sequence validation
+     * Note: Ace is treated as low (value 1) for forming sequences
      */
     private getRankValue(rank: Rank): number {
         const rankValues: Record<Rank, number> = {
@@ -14,13 +15,14 @@ class ValidationService {
 
     /**
      * Get point value of a card for deadwood calculation
+     * Note: Ace is worth 10 points for scoring (Indian Rummy rule)
      */
     private getCardPoints(card: Card): number {
         if (card.isPrintedJoker || card.isWildJoker) return 0;
         
         const rank = card.rank as Rank;
         if (rank === 'J' || rank === 'Q' || rank === 'K') return 10;
-        if (rank === 'A') return 10;
+        if (rank === 'A') return 10; // Ace is worth 10 points in Indian Rummy
         
         return this.getRankValue(rank);
     }

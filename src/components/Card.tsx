@@ -37,6 +37,7 @@ export default function Card({
     return (
         <div
             className={`
+                card-base
                 ${sizeClass} 
                 ${isSelected ? 'card-selected' : ''} 
                 flex flex-col items-center justify-center 

@@ -27,6 +27,19 @@ class DeckService {
     }
 
     /**
+     * Create a single printed joker card
+     */
+    private createPrintedJoker(id: string): Card {
+        return {
+            id,
+            suit: 'joker',
+            rank: 'JOKER',
+            isPrintedJoker: true,
+            isWildJoker: false,
+        };
+    }
+
+    /**
      * Create 2 standard decks (104 cards) + 2 printed jokers (106 total)
      */
     createDeck(): Card[] {
@@ -37,20 +50,8 @@ class DeckService {
         deck.push(...this.createSingleDeck());
 
         // Add 2 printed jokers
-        deck.push({
-            id: 'printed-joker-1',
-            suit: 'joker',
-            rank: 'JOKER',
-            isPrintedJoker: true,
-            isWildJoker: false,
-        });
-        deck.push({
-            id: 'printed-joker-2',
-            suit: 'joker',
-            rank: 'JOKER',
-            isPrintedJoker: true,
-            isWildJoker: false,
-        });
+        deck.push(this.createPrintedJoker('printed-joker-1'));
+        deck.push(this.createPrintedJoker('printed-joker-2'));
 
         return deck;
     }
