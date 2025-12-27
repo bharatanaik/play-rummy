@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { Card, Meld, MeldType } from '../model';
 import { validationService } from '../services/validation.service';
 import CardComponent from './Card';
@@ -13,15 +13,14 @@ export default function DeclareModal({ hand, onDeclare, onClose }: DeclareModalP
     const [melds, setMelds] = useState<Meld[]>([]);
     const [unassignedCards, setUnassignedCards] = useState<Card[]>(hand);
     const [draggedCard, setDraggedCard] = useState<{ card: Card; source: 'unassigned' | number } | null>(null);
-    const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
     // Initialize with empty melds
     useEffect(() => {
         setUnassignedCards(hand);
     }, [hand]);
 
-    // Validate current melds
-    const validateMelds = useCallback(() => {
+    // Validate current melds - memoized to avoid expensive recalculation
+    const validationErrors = useMemo(() => {
         const errors: string[] = [];
         let hasValidPureSequence = false;
         let sequenceCount = 0;
@@ -59,13 +58,10 @@ export default function DeclareModal({ hand, onDeclare, onClose }: DeclareModalP
             errors.push('All 13 cards must be assigned to melds');
         }
 
-        setValidationErrors(errors);
-        return errors.length === 0;
+        return errors;
     }, [melds, unassignedCards]);
 
-    useEffect(() => {
-        validateMelds();
-    }, [validateMelds]);
+    // Remove the old validateMelds function and useEffect that called it
 
     const addMeld = (type: MeldType) => {
         setMelds([...melds, { type, cards: [] }]);
@@ -123,7 +119,7 @@ export default function DeclareModal({ hand, onDeclare, onClose }: DeclareModalP
     };
 
     const handleDeclare = () => {
-        if (validateMelds()) {
+        if (validationErrors.length === 0) {
             onDeclare(melds.filter(m => m.cards.length > 0));
         }
     };

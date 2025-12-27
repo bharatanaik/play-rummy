@@ -54,7 +54,11 @@ function Lobby() {
 
     // Handle image load error
     const handleImageError = (uid: string) => {
-        setImageErrors(prev => new Set(prev).add(uid));
+        setImageErrors(prev => {
+            const newSet = new Set(prev);
+            newSet.add(uid);
+            return newSet;
+        });
     };
 
     // Leave lobby
