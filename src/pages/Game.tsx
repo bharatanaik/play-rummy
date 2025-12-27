@@ -139,6 +139,7 @@ export default function Game() {
     };
 
     // Handle hand reordering (local only - not synced to server)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const handleHandReorder = (_reorderedHand: typeof playerHand) => {
         // Note: Hand reordering is currently local-only and not persisted
         // The server maintains the canonical order
