@@ -5,6 +5,38 @@
     min-height: 100vh;
     background-color: #f9fafb;
   }
+  
+  /* Animation keyframes */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes slideInFromBottom {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes pulse-ring {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 0.5;
+    }
+  }
 }
 
 @layer components {
@@ -132,6 +164,7 @@
   .game-table {
     min-height: 100vh;
     background: linear-gradient(to bottom, #0a5c3a, #065f46);
+    animation: fadeIn 0.5s ease-out;
   }
   
   /* Fixed Bottom Bars */
@@ -142,6 +175,7 @@
     right: 0;
     background: linear-gradient(to top, rgba(17, 24, 39, 0.95), transparent);
     padding: 0.75rem 0.5rem;
+    animation: slideInFromBottom 0.4s ease-out;
   }
   
   /* Center hand bar on desktop with max width */
@@ -163,6 +197,7 @@
     background-color: white;
     border-top: 1px solid #d1d5db;
     box-shadow: 0 -10px 15px -3px rgb(0 0 0 / 0.1);
+    animation: slideInFromBottom 0.3s ease-out;
   }
   
   /* Center action bar on desktop with max width */

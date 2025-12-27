@@ -19,41 +19,41 @@ export default function ActionBar({
 }: ActionBarProps) {
     return (
         <div className="action-bar p-3">
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 max-w-4xl mx-auto">
                 {/* Draw from Closed Pile */}
                 <button
                     onClick={onDrawClosed}
                     disabled={!isMyTurn || hasDrawn}
-                    className="btn-primary touch-target"
+                    className="btn-primary touch-target text-sm md:text-base"
                 >
-                    Draw Closed
+                    🂠 Draw Closed
                 </button>
 
                 {/* Draw from Open Pile */}
                 <button
                     onClick={onDrawOpen}
                     disabled={!isMyTurn || hasDrawn}
-                    className="btn-secondary touch-target"
+                    className="btn-secondary touch-target text-sm md:text-base"
                 >
-                    Draw Open
+                    🃏 Draw Open
                 </button>
 
                 {/* Discard */}
                 <button
                     onClick={onDiscard}
                     disabled={!isMyTurn || !hasDrawn || !hasSelectedCard}
-                    className="btn-primary touch-target"
+                    className="btn-primary touch-target text-sm md:text-base"
                 >
-                    Discard
+                    ♠️ Discard
                 </button>
 
                 {/* Declare */}
                 <button
                     onClick={onDeclare}
                     disabled={!isMyTurn || hasDrawn}
-                    className="btn-success touch-target"
+                    className="btn-success touch-target text-sm md:text-base"
                 >
-                    Declare
+                    🏆 Declare
                 </button>
             </div>
         </div>
