@@ -27,6 +27,17 @@
     }
   }
   
+  @keyframes slideInFromRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
   @keyframes pulse-ring {
     0%, 100% {
       transform: scale(1);
@@ -101,9 +112,18 @@
   }
   
   .card-mini {
-    /* Mobile-first: smaller cards to fit 13 cards */
-    width: 2.75rem;  /* 44px - fits ~13 cards on 360px screen */
-    height: 4rem;    /* 64px */
+    /* Mobile-first: optimized for smallest screens (320px) */
+    /* 13 cards with gaps: (320px - 32px padding - 12*4px gaps) / 13 ≈ 22px per card */
+    width: 2.5rem;   /* 40px - fits 13 cards on 320px screen with small gaps */
+    height: 3.75rem; /* 60px - maintains aspect ratio */
+  }
+  
+  /* iPhone SE and small phones (375px) */
+  @media (min-width: 375px) {
+    .card-mini {
+      width: 2.75rem;  /* 44px */
+      height: 4rem;    /* 64px */
+    }
   }
   
   /* Responsive card sizing */
@@ -233,5 +253,9 @@
   
   .text-card-black {
     color: #1f2937;
+  }
+  
+  .animate-slideInFromRight {
+    animation: slideInFromRight 0.3s ease-out;
   }
 }

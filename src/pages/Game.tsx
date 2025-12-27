@@ -2,11 +2,14 @@ import { useParams, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { gameService } from "../services/game.service";
-import type { GameState } from "../model";
+import { lobbyService } from "../services/lobby.service";
+import type { GameState, Meld } from "../model";
 import Card from "../components/Card";
 import HandBar from "../components/HandBar";
 import ActionBar from "../components/ActionBar";
 import PlayerList from "../components/PlayerList";
+import DeclareModal from "../components/DeclareModal";
+import ScoreModal from "../components/ScoreModal";
 
 // Card back component for closed pile
 const CardBack = () => (
@@ -24,6 +27,8 @@ export default function Game() {
     const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isDragOverDiscard, setIsDragOverDiscard] = useState(false);
+    const [showDeclareModal, setShowDeclareModal] = useState(false);
+    const [showScoreModal, setShowScoreModal] = useState(false);
 
     // Guard: must be authenticated and have a gameId
     useEffect(() => {
@@ -38,6 +43,12 @@ export default function Game() {
 
         const unsubscribe = gameService.subscribeToGame(gameId, (state) => {
             setGameState(state);
+            
+            // Show score modal when game is completed and scores are available
+            if (state?.status === 'completed' && state.scores && state.scores.length > 0) {
+                setShowScoreModal(true);
+                setShowDeclareModal(false); // Close declare modal if open
+            }
             
             // Clear error when game state updates successfully
             setError(null);
@@ -89,14 +100,23 @@ export default function Game() {
     // Handle declare (placeholder - full implementation would show modal)
     const handleDeclare = async () => {
         if (!gameId || !player?.uid) return;
-
-        // For now, just show an alert - full implementation would have a modal
-        setError('Declaration modal not yet implemented. Please organize your cards and use the Declare button when you have a valid hand.');
         
-        // Example: In a full implementation, you would:
-        // 1. Show a modal/dialog
-        // 2. Let user organize cards into melds (sequences/sets)
-        // 3. Call gameService.declare(gameId, player.uid, melds)
+        // Show the declaration modal
+        setShowDeclareModal(true);
+    };
+
+    // Handle actual declaration submission
+    const handleDeclareSubmit = async (melds: Meld[]) => {
+        if (!gameId || !player?.uid) return;
+
+        try {
+            setError(null);
+            await gameService.declare(gameId, player.uid, melds);
+            setShowDeclareModal(false);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to declare');
+            console.error(err);
+        }
     };
 
     // Handle card selection
@@ -135,6 +155,22 @@ export default function Game() {
                 setError(err instanceof Error ? err.message : 'Failed to discard card');
                 console.error(err);
             }
+        }
+    };
+
+    // Handle back to lobby from score modal
+    const handleBackToLobby = async () => {
+        if (!gameState?.lobbyId) return;
+        
+        try {
+            // End the current game in lobby
+            await lobbyService.endCurrentGame(gameState.lobbyId);
+            // Navigate back to lobby
+            navigate(`/lobby/${gameState.lobbyId}`);
+        } catch (err) {
+            console.error('Failed to return to lobby:', err);
+            // Fallback: just navigate
+            navigate(`/lobby/${gameState.lobbyId}`);
         }
     };
 
@@ -284,6 +320,26 @@ export default function Game() {
                 onDiscard={handleDiscard}
                 onDeclare={handleDeclare}
             />
+
+            {/* Declare Modal */}
+            {showDeclareModal && (
+                <DeclareModal
+                    hand={playerHand}
+                    onDeclare={handleDeclareSubmit}
+                    onClose={() => setShowDeclareModal(false)}
+                />
+            )}
+
+            {/* Score Modal */}
+            {showScoreModal && gameState?.scores && (
+                <ScoreModal
+                    scores={gameState.scores}
+                    gameId={gameId}
+                    lobbyId={gameState.lobbyId}
+                    isHost={!!player.isHost}
+                    onBackToLobby={handleBackToLobby}
+                />
+            )}
         </div>
     );
 }

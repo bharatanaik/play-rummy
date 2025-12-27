@@ -1,6 +1,6 @@
 // src/context/AuthContext.tsx
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { type User, onAuthStateChanged, signInWithPopup, signOut} from 'firebase/auth';
+import { type User, onAuthStateChanged, signInWithRedirect, getRedirectResult, signOut} from 'firebase/auth';
 import { auth, provider } from '../firebase/config';
 import { useNavigate } from 'react-router';
 import type { Player } from '../model';
@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const signInWithGoogle = async () => {
         try {
-            await signInWithPopup(auth, provider);
+            await signInWithRedirect(auth, provider);
         } catch (error) {
             console.error("Google sign-in error:", error);
         }
@@ -37,6 +37,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             console.error("Logout error:", error);
         }
     };
+
+    // Check for redirect result on mount
+    useEffect(() => {
+        const checkRedirectResult = async () => {
+            try {
+                const result = await getRedirectResult(auth);
+                if (result?.user) {
+                    console.log('Sign-in successful via redirect:', result.user);
+                }
+            } catch (error) {
+                console.error("Redirect result error:", error);
+            }
+        };
+        
+        checkRedirectResult();
+    }, []);;
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {

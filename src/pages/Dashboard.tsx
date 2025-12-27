@@ -2,11 +2,13 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { lobbyService } from '../services/lobby.service';
 import { useState } from 'react';
+import HowToPlayModal from '../components/HowToPlayModal';
 
 const Dashboard = () => {
     const { logout, player} = useAuth();
     const navigate = useNavigate();
     const [lobbyId, setLobbyId] = useState('');
+    const [showHowToPlay, setShowHowToPlay] = useState(false);
 
     const handleCreateLobbyButton = async () => {
         if(player){
@@ -151,7 +153,30 @@ const Dashboard = () => {
                         <p className="text-sm text-green-100">Real-time multiplayer fun</p>
                     </div>
                 </div>
+
+                {/* How to Play Button */}
+                <div className="text-center mt-6">
+                    <button
+                        onClick={() => setShowHowToPlay(true)}
+                        className="
+                            bg-white/10 backdrop-blur-sm hover:bg-white/20 
+                            text-white border-2 border-white/30
+                            px-6 py-3 rounded-lg font-semibold
+                            transition-all duration-200
+                            hover:scale-105 active:scale-95
+                            flex items-center gap-2 mx-auto
+                        "
+                    >
+                        <span className="text-xl">📖</span>
+                        <span>How to Play</span>
+                    </button>
+                </div>
             </div>
+
+            {/* How to Play Modal */}
+            {showHowToPlay && (
+                <HowToPlayModal onClose={() => setShowHowToPlay(false)} />
+            )}
         </div>
     );
 };

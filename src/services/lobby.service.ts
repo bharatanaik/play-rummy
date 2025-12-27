@@ -7,7 +7,7 @@ import {
     type DatabaseReference
 } from "firebase/database";
 import { db } from "../firebase/config";
-import type { Player } from "../model";
+import type { Player, LobbyScore, GameScore } from "../model";
 import { gameService } from "./game.service";
 
 class LobbyService {
@@ -30,7 +30,8 @@ class LobbyService {
                     ...host,
                     isHost: true
                 }
-            }
+            },
+            scores: {} // Initialize empty scores object
         };
 
         await set(this.getLobbyRef(lobbyId), lobbyData);
@@ -113,6 +114,48 @@ class LobbyService {
         await update(this.getLobbyRef(lobbyId), {
             status: "waiting",
             currentGameId: null
+        });
+    }
+
+    // Update lobby scores from game results
+    async updateLobbyScores(lobbyId: string, gameScores: GameScore[]): Promise<void> {
+        const lobbyRef = this.getLobbyRef(lobbyId);
+        const lobbySnap = await get(lobbyRef);
+
+        if (!lobbySnap.exists()) {
+            throw new Error("Lobby does not exist");
+        }
+
+        const lobby = lobbySnap.val();
+        const currentScores: LobbyScore = lobby.scores || {};
+
+        // Update scores for each player
+        gameScores.forEach((gameScore) => {
+            const playerUid = gameScore.playerUid;
+            const currentPlayerScore = currentScores[playerUid] || {
+                totalScore: 0,
+                gamesPlayed: 0,
+                gamesWon: 0,
+                bestHand: Infinity,
+            };
+
+            // Update stats
+            currentPlayerScore.totalScore += gameScore.score;
+            currentPlayerScore.gamesPlayed += 1;
+            if (gameScore.isWinner) {
+                currentPlayerScore.gamesWon += 1;
+            }
+            // Only update bestHand for non-zero scores (actual hands played, not wins)
+            if (gameScore.score > 0 && gameScore.score < currentPlayerScore.bestHand) {
+                currentPlayerScore.bestHand = gameScore.score;
+            }
+
+            currentScores[playerUid] = currentPlayerScore;
+        });
+
+        // Save updated scores
+        await update(lobbyRef, {
+            scores: currentScores,
         });
     }
 

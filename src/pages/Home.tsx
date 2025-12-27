@@ -1,11 +1,12 @@
 import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "../context/AuthContext"
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function Login () {
-    const {signInWithGoogle, user} = useAuth();
+    const {signInWithGoogle, user, loading} = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+    const [isRedirecting, setIsRedirecting] = useState(false);
 
     useEffect(()=>{
         if(user){
@@ -17,6 +18,27 @@ export default function Login () {
                 navigate('/dashboard');
         }
     }, [user, navigate, location.search]);
+
+    const handleSignIn = async () => {
+        setIsRedirecting(true);
+        await signInWithGoogle();
+    };
+
+    if (loading || isRedirecting) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-green-600 via-green-700 to-emerald-800 flex items-center justify-center p-4">
+                <div className="text-center">
+                    <div className="text-8xl mb-6 animate-bounce">🃏</div>
+                    <div className="text-white text-2xl font-bold mb-4">
+                        {isRedirecting ? 'Redirecting to Google...' : 'Loading...'}
+                    </div>
+                    <div className="flex justify-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
  
     return (
         <div className="min-h-screen bg-gradient-to-br from-green-600 via-green-700 to-emerald-800 flex items-center justify-center p-4">
@@ -38,7 +60,7 @@ export default function Login () {
                     
                     {/* Login Button */}
                     <button 
-                        onClick={signInWithGoogle}
+                        onClick={handleSignIn}
                         className="
                             bg-white text-green-700 px-8 py-4 rounded-lg 
                             font-bold text-lg shadow-2xl
