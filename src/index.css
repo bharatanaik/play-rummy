@@ -1,0 +1,137 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    min-height: 100vh;
+    background-color: #f9fafb;
+  }
+}
+
+@layer components {
+  /* Button Styles */
+  .btn {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    &:active {
+      scale: 0.95;
+    }
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      &:active {
+        scale: 1;
+      }
+    }
+  }
+  
+  .btn-primary {
+    background-color: #2563eb;
+    color: white;
+    &:hover:not(:disabled) {
+      background-color: #1d4ed8;
+    }
+    &:active:not(:disabled) {
+      background-color: #1e40af;
+    }
+  }
+  
+  .btn-secondary {
+    background-color: #4b5563;
+    color: white;
+    &:hover:not(:disabled) {
+      background-color: #374151;
+    }
+    &:active:not(:disabled) {
+      background-color: #1f2937;
+    }
+  }
+  
+  .btn-success {
+    background-color: #16a34a;
+    color: white;
+    &:hover:not(:disabled) {
+      background-color: #15803d;
+    }
+    &:active:not(:disabled) {
+      background-color: #166534;
+    }
+  }
+  
+  /* Card Styles */
+  .card-base {
+    position: relative;
+    border-radius: 0.5rem;
+    border: 2px solid #1f2937;
+    background-color: white;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  }
+  
+  .card-mini {
+    width: 3.5rem;
+    height: 5rem;
+  }
+  
+  .card-small {
+    width: 4rem;
+    height: 6rem;
+  }
+  
+  .card-selected {
+    --tw-ring-offset-shadow: 0 0 0 0px #fff;
+    --tw-ring-shadow: 0 0 0 4px #3b82f6;
+    box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+    transform: translateY(-0.5rem);
+  }
+  
+  /* Game Table */
+  .game-table {
+    min-height: 100vh;
+    background: linear-gradient(to bottom, #0a5c3a, #065f46);
+  }
+  
+  /* Fixed Bottom Bars */
+  .hand-bar {
+    position: fixed;
+    bottom: 4rem;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(17, 24, 39, 0.95), transparent);
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .action-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: white;
+    border-top: 1px solid #d1d5db;
+    box-shadow: 0 -10px 15px -3px rgb(0 0 0 / 0.1);
+  }
+}
+
+@layer utilities {
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .touch-target {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  .text-card-red {
+    color: #dc2626;
+  }
+  
+  .text-card-black {
+    color: #1f2937;
+  }
+}

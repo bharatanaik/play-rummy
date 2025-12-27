@@ -8,7 +8,7 @@ const Dashboard = () => {
 
     const handleCreateLobbyButton = async () => {
         if(player){
-            let lobbyId = await lobbyService.createLobby(player);
+            const lobbyId = await lobbyService.createLobby(player);
             navigate(`/lobby/${lobbyId}`);
         }
     }
