@@ -123,6 +123,11 @@
     transform: translateY(-0.5rem);
   }
   
+  .card-dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+  }
+  
   /* Game Table */
   .game-table {
     min-height: 100vh;

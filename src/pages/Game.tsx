@@ -23,6 +23,7 @@ export default function Game() {
     const [gameState, setGameState] = useState<GameState | null>(null);
     const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [isDragOverDiscard, setIsDragOverDiscard] = useState(false);
 
     // Guard: must be authenticated and have a gameId
     useEffect(() => {
@@ -103,6 +104,47 @@ export default function Game() {
         setSelectedCardId(cardId === selectedCardId ? null : cardId);
     };
 
+    // Handle drag-to-discard
+    const handleDiscardDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        const source = e.dataTransfer.types.includes('text/plain') || e.dataTransfer.effectAllowed === 'move';
+        if (source) {
+            e.dataTransfer.dropEffect = 'move';
+            setIsDragOverDiscard(true);
+        }
+    };
+
+    const handleDiscardDragLeave = () => {
+        setIsDragOverDiscard(false);
+    };
+
+    const handleDiscardDrop = async (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragOverDiscard(false);
+        
+        const cardId = e.dataTransfer.getData('cardId');
+        const source = e.dataTransfer.getData('source');
+        
+        // Only allow discarding from hand
+        if (source === 'hand' && cardId && gameId && player?.uid) {
+            try {
+                setError(null);
+                await gameService.discard(gameId, player.uid, cardId);
+                setSelectedCardId(null);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'Failed to discard card');
+                console.error(err);
+            }
+        }
+    };
+
+    // Handle hand reordering (local only - not synced to server)
+    const handleHandReorder = (reorderedHand: typeof playerHand) => {
+        // This is a local UI change only
+        // You could save the order to localStorage if needed
+        console.log('Hand reordered:', reorderedHand);
+    };
+
     if (!player || !gameId) return null;
 
     if (!gameState) {
@@ -179,16 +221,31 @@ export default function Game() {
                     </div>
                 </div>
 
-                {/* Open Pile */}
+                {/* Open Pile - Drop Zone for Discard */}
                 <div className="text-center">
-                    <div className="text-white font-semibold mb-2">Open Pile</div>
-                    {topOpenCard ? (
-                        <Card {...topOpenCard} size="small" />
-                    ) : (
-                        <div className="card-small bg-gray-700 border-gray-600 flex items-center justify-center">
-                            <div className="text-white text-sm">Empty</div>
-                        </div>
-                    )}
+                    <div className="text-white font-semibold mb-2">Open Pile (Discard Here)</div>
+                    <div
+                        className={`
+                            relative transition-all duration-200
+                            ${isDragOverDiscard ? 'scale-110 ring-4 ring-yellow-400' : ''}
+                        `}
+                        onDragOver={handleDiscardDragOver}
+                        onDragLeave={handleDiscardDragLeave}
+                        onDrop={handleDiscardDrop}
+                    >
+                        {topOpenCard ? (
+                            <Card {...topOpenCard} size="small" />
+                        ) : (
+                            <div className="card-small bg-gray-700 border-gray-600 flex items-center justify-center">
+                                <div className="text-white text-sm">Empty</div>
+                            </div>
+                        )}
+                        {isDragOverDiscard && (
+                            <div className="absolute inset-0 bg-yellow-400/30 rounded-lg flex items-center justify-center">
+                                <div className="text-white font-bold text-lg">Drop to Discard</div>
+                            </div>
+                        )}
+                    </div>
                     <div className="text-white text-sm mt-2">
                         {gameState.openPile.length} cards
                     </div>
@@ -210,6 +267,7 @@ export default function Game() {
                 hand={playerHand}
                 selectedCardId={selectedCardId}
                 onCardSelect={handleCardSelect}
+                onReorder={handleHandReorder}
             />
 
             {/* Action Bar - Fixed at bottom */}

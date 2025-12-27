@@ -4,6 +4,9 @@ interface CardProps extends CardType {
     isSelected?: boolean;
     onClick?: () => void;
     size?: 'mini' | 'small';
+    onDragStart?: (e: React.DragEvent) => void;
+    onDragEnd?: (e: React.DragEvent) => void;
+    draggable?: boolean;
 }
 
 const suitSymbols: Record<string, string> = {
@@ -30,6 +33,9 @@ export default function Card({
     isSelected = false,
     onClick,
     size = 'mini',
+    onDragStart,
+    onDragEnd,
+    draggable = false,
 }: CardProps) {
     const sizeClass = size === 'mini' ? 'card-mini' : 'card-small';
     const colorClass = suitColors[suit] || 'text-gray-800';
@@ -52,8 +58,12 @@ export default function Card({
                 cursor-pointer select-none
                 transition-all duration-200
                 ${onClick ? 'hover:shadow-lg active:scale-95' : ''}
+                ${draggable ? 'cursor-grab active:cursor-grabbing' : ''}
             `}
             onClick={onClick}
+            draggable={draggable}
+            onDragStart={onDragStart}
+            onDragEnd={onDragEnd}
         >
             {/* Wild Joker Indicator */}
             {isWildJoker && !isPrintedJoker && (
