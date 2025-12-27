@@ -8,9 +8,8 @@ class DeckService {
     /**
      * Create a standard 52-card deck
      */
-    private createSingleDeck(deckNumber: number): Card[] {
+    private createSingleDeck(deckNumber: number, timestamp: number): Card[] {
         const deck: Card[] = [];
-        const timestamp = Date.now();
 
         for (const suit of this.suits) {
             for (const rank of this.ranks) {
@@ -32,8 +31,7 @@ class DeckService {
     /**
      * Create a single printed joker card
      */
-    private createPrintedJoker(): Card {
-        const timestamp = Date.now();
+    private createPrintedJoker(timestamp: number): Card {
         const id = `card-${timestamp}-joker-${this.globalCardId++}`;
         return {
             id,
@@ -49,16 +47,17 @@ class DeckService {
      */
     createDeck(): Card[] {
         const deck: Card[] = [];
+        const timestamp = Date.now(); // Single timestamp for entire deck creation
 
         console.log('[DECK] Creating new deck...');
         
         // Add two standard decks with unique IDs
-        deck.push(...this.createSingleDeck(1));
-        deck.push(...this.createSingleDeck(2));
+        deck.push(...this.createSingleDeck(1, timestamp));
+        deck.push(...this.createSingleDeck(2, timestamp));
 
         // Add 2 printed jokers
-        deck.push(this.createPrintedJoker());
-        deck.push(this.createPrintedJoker());
+        deck.push(this.createPrintedJoker(timestamp));
+        deck.push(this.createPrintedJoker(timestamp));
 
         console.log('[DECK] Created deck with', deck.length, 'cards');
 

@@ -132,7 +132,10 @@ class GameService {
             console.log('[DRAW] Closed pile before:', gameState.closedPile.length, 'cards');
 
             // Draw last card from closed pile (top of deck)
-            const drawnCard = gameState.closedPile[gameState.closedPile.length - 1];
+            const drawnCard = gameState.closedPile.at(-1);
+            if (!drawnCard) {
+                throw new Error('Failed to draw card from closed pile');
+            }
             const newClosedPile = gameState.closedPile.slice(0, -1);
             
             console.log('[DRAW] Drew card:', drawnCard.id, drawnCard.rank, 'of', drawnCard.suit);
@@ -197,7 +200,10 @@ class GameService {
             console.log('[DRAW] Open pile before:', gameState.openPile.length, 'cards');
 
             // Draw top card from open pile (last card in array)
-            const drawnCard = gameState.openPile[gameState.openPile.length - 1];
+            const drawnCard = gameState.openPile.at(-1);
+            if (!drawnCard) {
+                throw new Error('Failed to draw card from open pile');
+            }
             const newOpenPile = gameState.openPile.slice(0, -1);
             
             console.log('[DRAW] Drew card:', drawnCard.id, drawnCard.rank, 'of', drawnCard.suit);
