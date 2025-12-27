@@ -10,8 +10,14 @@ const Dashboard = () => {
 
     const handleCreateLobbyButton = async () => {
         if(player){
-            const newLobbyId = await lobbyService.createLobby(player);
-            navigate(`/lobby/${newLobbyId}`);
+            try {
+                const newLobbyId = await lobbyService.createLobby(player);
+                navigate(`/lobby/${newLobbyId}`);
+            } catch (error) {
+                console.error('Failed to create lobby:', error);
+                // You could show an error message to the user here
+                alert('Failed to create lobby. Please try again.');
+            }
         }
     }
 

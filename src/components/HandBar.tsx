@@ -19,21 +19,11 @@ export default function HandBar({ hand, selectedCardId, onCardSelect, onReorder 
         e.dataTransfer.setData('cardId', cardId);
         e.dataTransfer.setData('sourceIndex', index.toString());
         e.dataTransfer.setData('source', 'hand');
-        
-        // Add visual feedback
-        if (e.currentTarget instanceof HTMLElement) {
-            e.currentTarget.style.opacity = '0.5';
-        }
     };
 
-    const handleDragEnd = (e: React.DragEvent) => {
+    const handleDragEnd = () => {
         setDraggedCardId(null);
         setDragOverIndex(null);
-        
-        // Reset opacity
-        if (e.currentTarget instanceof HTMLElement) {
-            e.currentTarget.style.opacity = '1';
-        }
     };
 
     const handleDragOver = (e: React.DragEvent, index: number) => {
@@ -72,6 +62,7 @@ export default function HandBar({ hand, selectedCardId, onCardSelect, onReorder 
                         className={`
                             flex-shrink-0 transition-all duration-200
                             ${dragOverIndex === index && draggedCardId !== card.id ? 'ml-4' : ''}
+                            ${draggedCardId === card.id ? 'opacity-50' : 'opacity-100'}
                         `}
                         onDragOver={(e) => handleDragOver(e, index)}
                         onDrop={(e) => handleDrop(e, index)}

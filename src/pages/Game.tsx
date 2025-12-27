@@ -139,10 +139,11 @@ export default function Game() {
     };
 
     // Handle hand reordering (local only - not synced to server)
-    const handleHandReorder = (reorderedHand: typeof playerHand) => {
-        // This is a local UI change only
-        // You could save the order to localStorage if needed
-        console.log('Hand reordered:', reorderedHand);
+    const handleHandReorder = (_reorderedHand: typeof playerHand) => {
+        // Note: Hand reordering is currently local-only and not persisted
+        // The server maintains the canonical order
+        // Future enhancement: Could save preference to localStorage if needed
+        console.log('Hand reordered locally');
     };
 
     if (!player || !gameId) return null;
