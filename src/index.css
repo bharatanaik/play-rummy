@@ -112,39 +112,38 @@
   }
   
   .card-mini {
-    /* Mobile-first: optimized for smallest screens (320px) */
-    /* 13 cards with gaps: (320px - 32px padding - 12*4px gaps) / 13 ≈ 22px per card */
-    width: 2.5rem;   /* 40px - fits 13 cards on 320px screen with small gaps */
-    height: 3.75rem; /* 60px - maintains aspect ratio */
+    /* Mobile-first: MUCH LARGER for readability - uses overlapping layout */
+    width: 4rem;     /* 64px - minimum readable size */
+    height: 6rem;    /* 96px - maintains card aspect ratio */
   }
   
-  /* iPhone SE and small phones (375px) */
+  /* iPhone SE and small phones (375px+) */
   @media (min-width: 375px) {
     .card-mini {
-      width: 2.75rem;  /* 44px */
-      height: 4rem;    /* 64px */
+      width: 4.5rem;   /* 72px */
+      height: 6.75rem; /* 108px */
     }
   }
   
-  /* Responsive card sizing */
+  /* Responsive card sizing - even larger on bigger screens */
   @media (min-width: 640px) {
     .card-mini {
-      width: 3.5rem;  /* 56px */
-      height: 5rem;   /* 80px */
+      width: 5rem;     /* 80px */
+      height: 7.5rem;  /* 120px */
     }
   }
   
   @media (min-width: 768px) {
     .card-mini {
-      width: 4rem;    /* 64px */
-      height: 5.5rem; /* 88px */
+      width: 5.5rem;   /* 88px */
+      height: 8rem;    /* 128px */
     }
   }
   
   @media (min-width: 1024px) {
     .card-mini {
-      width: 5rem;    /* 80px */
-      height: 7rem;   /* 112px */
+      width: 6rem;     /* 96px */
+      height: 8.5rem;  /* 136px */
     }
   }
   
@@ -190,11 +189,11 @@
   /* Fixed Bottom Bars */
   .hand-bar {
     position: fixed;
-    bottom: 4rem;
+    bottom: 5rem;  /* Increased from 4rem to 5rem for more clearance */
     left: 0;
     right: 0;
     background: linear-gradient(to top, rgba(17, 24, 39, 0.95), transparent);
-    padding: 0.75rem 0.5rem;
+    padding: 0.5rem 0.25rem;  /* Reduced padding for more space */
     animation: slideInFromBottom 0.4s ease-out;
   }
   
@@ -257,5 +256,14 @@
   
   .animate-slideInFromRight {
     animation: slideInFromRight 0.3s ease-out;
+  }
+  
+  /* Safe area for iOS notch and home indicator */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
   }
 }

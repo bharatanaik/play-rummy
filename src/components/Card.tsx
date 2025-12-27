@@ -52,13 +52,13 @@ export default function Card({
     const sizeClass = size === 'mini' ? 'card-mini' : 'card-small';
     const colorClass = suitColors[suit] || 'text-gray-800';
     
-    // Responsive text sizing - smaller on mobile for mini cards
+    // Responsive text sizing - MUCH BIGGER on mobile for readability, capped for balance
     const rankSizeClass = size === 'mini' 
-        ? 'text-xs sm:text-sm md:text-base lg:text-lg font-bold'
-        : 'text-lg font-bold';
+        ? 'text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-bold leading-none'
+        : 'text-3xl md:text-4xl font-bold leading-none';
     const suitSizeClass = size === 'mini'
-        ? 'text-sm sm:text-base md:text-lg lg:text-xl leading-none'
-        : 'text-2xl leading-none';
+        ? 'text-3xl sm:text-4xl md:text-4xl lg:text-5xl leading-none'
+        : 'text-4xl md:text-5xl leading-none';
     
     return (
         <div
@@ -79,11 +79,11 @@ export default function Card({
         >
             {/* Wild Joker Indicator */}
             {isWildJoker && !isPrintedJoker && (
-                <div className="absolute top-0 right-0 w-2 h-2 sm:w-3 sm:h-3 bg-yellow-400 rounded-full border border-yellow-600" />
+                <div className="absolute top-0.5 right-0.5 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-yellow-400 rounded-full border border-yellow-600" />
             )}
             
             {/* Card Content */}
-            <div className={`${colorClass} ${rankSizeClass}`}>
+            <div className={`${colorClass} ${rankSizeClass} mb-0.5`}>
                 {rank === 'JOKER' ? '🃏' : rank}
             </div>
             <div className={`${colorClass} ${suitSizeClass}`}>
@@ -92,7 +92,7 @@ export default function Card({
             
             {/* Printed Joker Label */}
             {isPrintedJoker && (
-                <div className="absolute bottom-0 text-xs font-semibold text-purple-600">
+                <div className="absolute bottom-0.5 text-xs font-semibold text-purple-600">
                     JOKER
                 </div>
             )}
