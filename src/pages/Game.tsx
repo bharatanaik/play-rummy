@@ -6,6 +6,7 @@ import type { GameState } from "../model";
 import Card from "../components/Card";
 import HandBar from "../components/HandBar";
 import ActionBar from "../components/ActionBar";
+import PlayerList from "../components/PlayerList";
 
 // Card back component for closed pile
 const CardBack = () => (
@@ -135,6 +136,9 @@ export default function Game() {
                     )}
                 </div>
             </div>
+
+            {/* Player List */}
+            <PlayerList players={gameState.players} currentTurn={gameState.currentTurn} />
 
             {/* Turn Indicator */}
             <div className="p-4">

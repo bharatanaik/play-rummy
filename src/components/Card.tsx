@@ -34,6 +34,14 @@ export default function Card({
     const sizeClass = size === 'mini' ? 'card-mini' : 'card-small';
     const colorClass = suitColors[suit] || 'text-gray-800';
     
+    // Responsive text sizing
+    const rankSizeClass = size === 'mini' 
+        ? 'text-sm sm:text-base md:text-lg font-bold'
+        : 'text-lg font-bold';
+    const suitSizeClass = size === 'mini'
+        ? 'text-lg sm:text-xl md:text-2xl leading-none'
+        : 'text-2xl leading-none';
+    
     return (
         <div
             className={`
@@ -49,14 +57,14 @@ export default function Card({
         >
             {/* Wild Joker Indicator */}
             {isWildJoker && !isPrintedJoker && (
-                <div className="absolute top-0 right-0 w-3 h-3 bg-yellow-400 rounded-full border border-yellow-600" />
+                <div className="absolute top-0 right-0 w-2 h-2 sm:w-3 sm:h-3 bg-yellow-400 rounded-full border border-yellow-600" />
             )}
             
             {/* Card Content */}
-            <div className={`${colorClass} font-bold text-lg`}>
+            <div className={`${colorClass} ${rankSizeClass}`}>
                 {rank === 'JOKER' ? '🃏' : rank}
             </div>
-            <div className={`${colorClass} text-2xl leading-none`}>
+            <div className={`${colorClass} ${suitSizeClass}`}>
                 {suitSymbols[suit]}
             </div>
             

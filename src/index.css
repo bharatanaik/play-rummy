@@ -69,13 +69,51 @@
   }
   
   .card-mini {
-    width: 3.5rem;
-    height: 5rem;
+    /* Mobile-first: smaller cards to fit 13 cards */
+    width: 2.75rem;  /* 44px - fits ~13 cards on 360px screen */
+    height: 4rem;    /* 64px */
+  }
+  
+  /* Responsive card sizing */
+  @media (min-width: 640px) {
+    .card-mini {
+      width: 3.5rem;  /* 56px */
+      height: 5rem;   /* 80px */
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .card-mini {
+      width: 4rem;    /* 64px */
+      height: 5.5rem; /* 88px */
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .card-mini {
+      width: 5rem;    /* 80px */
+      height: 7rem;   /* 112px */
+    }
   }
   
   .card-small {
     width: 4rem;
     height: 6rem;
+  }
+  
+  /* Responsive small card sizing */
+  @media (min-width: 640px) {
+    .card-small {
+      width: 4.5rem;
+      height: 6.5rem;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .card-small {
+      width: 5rem;
+      height: 7.5rem;
+    }
   }
   
   .card-selected {
@@ -101,6 +139,17 @@
     padding: 0.75rem 0.5rem;
   }
   
+  /* Center hand bar on desktop with max width */
+  @media (min-width: 1024px) {
+    .hand-bar {
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: 80rem;
+      right: auto;
+      width: 100%;
+    }
+  }
+  
   .action-bar {
     position: fixed;
     bottom: 0;
@@ -109,6 +158,17 @@
     background-color: white;
     border-top: 1px solid #d1d5db;
     box-shadow: 0 -10px 15px -3px rgb(0 0 0 / 0.1);
+  }
+  
+  /* Center action bar on desktop with max width */
+  @media (min-width: 1024px) {
+    .action-bar {
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: 80rem;
+      right: auto;
+      width: 100%;
+    }
   }
 }
 
