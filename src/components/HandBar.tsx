@@ -55,13 +55,13 @@ export default function HandBar({ hand, selectedCardId, onCardSelect, onReorder 
 
     return (
         <div className="hand-bar">
-            <div className="flex gap-1 sm:gap-2 md:gap-3 overflow-x-auto hide-scrollbar pb-2 justify-center">
+            <div className="flex gap-0.5 sm:gap-1 md:gap-2 lg:gap-3 overflow-x-auto hide-scrollbar pb-2 px-2 justify-start md:justify-center">
                 {hand.map((card, index) => (
                     <div
                         key={card.id}
                         className={`
                             flex-shrink-0 transition-all duration-200
-                            ${dragOverIndex === index && draggedCardId !== card.id ? 'ml-4' : ''}
+                            ${dragOverIndex === index && draggedCardId !== card.id ? 'ml-2 sm:ml-4' : ''}
                             ${draggedCardId === card.id ? 'opacity-50' : 'opacity-100'}
                         `}
                         onDragOver={(e) => handleDragOver(e, index)}

@@ -40,12 +40,12 @@ export default function Card({
     const sizeClass = size === 'mini' ? 'card-mini' : 'card-small';
     const colorClass = suitColors[suit] || 'text-gray-800';
     
-    // Responsive text sizing
+    // Responsive text sizing - smaller on mobile for mini cards
     const rankSizeClass = size === 'mini' 
-        ? 'text-sm sm:text-base md:text-lg font-bold'
+        ? 'text-xs xs:text-sm sm:text-base md:text-lg font-bold'
         : 'text-lg font-bold';
     const suitSizeClass = size === 'mini'
-        ? 'text-lg sm:text-xl md:text-2xl leading-none'
+        ? 'text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl leading-none'
         : 'text-2xl leading-none';
     
     return (
