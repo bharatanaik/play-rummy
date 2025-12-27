@@ -1,6 +1,6 @@
 import { ref, set, update, onValue, off, get, type DatabaseReference } from 'firebase/database';
 import { db } from '../firebase/config';
-import type { GameState, Player, Meld } from '../model';
+import type { GameState, Player, Meld, GameScore } from '../model';
 import { deckService } from './deck.service';
 import { validationService } from './validation.service';
 
@@ -199,6 +199,93 @@ class GameService {
     }
 
     /**
+     * Calculate score for a player
+     * Winner gets 0, losers get points based on deadwood
+     */
+    private calculatePlayerScore(player: Player, isWinner: boolean, melds: Meld[]): number {
+        if (isWinner) return 0;
+
+        // Get all cards that are not in melds (deadwood)
+        const cardsInMelds = new Set(melds.flatMap(m => m.cards.map(c => c.id)));
+        const deadwoodCards = (player.hand || []).filter(card => !cardsInMelds.has(card.id));
+        
+        return validationService.calculateDeadwood(deadwoodCards);
+    }
+
+    /**
+     * Calculate scores for all players and update game
+     */
+    private async calculateAndStoreScores(gameId: string, gameState: GameState, winnerId: string, winnerMelds: Meld[]): Promise<void> {
+        const scores: GameScore[] = [];
+
+        // Calculate score for each player
+        Object.values(gameState.players).forEach((player) => {
+            if (!player.uid) return;
+
+            const isWinner = player.uid === winnerId;
+            const melds = isWinner ? winnerMelds : (player.melds || []);
+            const score = this.calculatePlayerScore(player, isWinner, melds);
+
+            scores.push({
+                playerUid: player.uid,
+                playerName: player.name || 'Player',
+                score,
+                melds,
+                isWinner,
+                declarationType: isWinner ? 'valid' : null,
+            });
+        });
+
+        // Update game with scores
+        await update(ref(db, `games/${gameId}`), {
+            scores,
+        });
+    }
+
+    /**
+     * Handle player drop (leaving the game mid-turn)
+     */
+    async drop(gameId: string, playerId: string): Promise<void> {
+        const gameRef = ref(db, `games/${gameId}`);
+        const snapshot = await get(gameRef);
+        
+        if (!snapshot.exists()) {
+            throw new Error('Game not found');
+        }
+
+        const gameState: GameState = snapshot.val();
+        const player = gameState.players[playerId];
+        
+        if (!player) {
+            throw new Error('Player not in game');
+        }
+
+        // Determine drop type based on game progress
+        const isFirstTurn = gameState.currentTurn === gameState.turnOrder[0];
+        const dropType = isFirstTurn ? 'first-drop' : 'middle-drop';
+        const dropPenalty = dropType === 'first-drop' ? 20 : 40;
+
+        // Mark player as dropped
+        await update(gameRef, {
+            [`players/${playerId}/hasDropped`]: true,
+            [`players/${playerId}/score`]: dropPenalty,
+        });
+
+        // Check if all other players have dropped - if so, declare remaining player as winner
+        const activePlayers = Object.values(gameState.players).filter(
+            p => p.uid !== playerId && !p.hasDropped && !p.hasDeclared
+        );
+
+        if (activePlayers.length === 1 && activePlayers[0].uid) {
+            // Last player standing wins
+            await update(gameRef, {
+                status: 'completed',
+                winner: activePlayers[0].uid,
+            });
+        }
+    }
+
+    /**
      * Submit a declaration for validation
      */
     async declare(gameId: string, playerId: string, melds: Meld[]): Promise<void> {
@@ -220,15 +307,26 @@ class GameService {
         const validation = validationService.validateDeclaration(melds);
         
         if (!validation.valid) {
+            // Invalid declaration - player gets 80 points penalty
+            await update(gameRef, {
+                status: 'completed',
+                [`players/${playerId}/hasDeclared`]: true,
+                [`players/${playerId}/score`]: 80,
+                [`players/${playerId}/melds`]: melds,
+            });
             throw new Error(validation.reason || 'Invalid declaration');
         }
 
-        // Mark player as declared and update game status
+        // Valid declaration - calculate scores
         await update(gameRef, {
             status: 'completed',
             winner: playerId,
             [`players/${playerId}/hasDeclared`]: true,
+            [`players/${playerId}/melds`]: melds,
         });
+
+        // Calculate and store scores for all players
+        await this.calculateAndStoreScores(gameId, gameState, playerId, melds);
     }
 
     /**

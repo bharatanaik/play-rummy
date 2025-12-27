@@ -20,6 +20,8 @@ export interface Player {
     score?: number;
     hasDrawn?: boolean;
     hasDeclared?: boolean;
+    hasDropped?: boolean;
+    melds?: Meld[];
 }
 
 // Meld type for card groupings
@@ -28,6 +30,26 @@ export type MeldType = 'sequence' | 'pure-sequence' | 'set';
 export interface Meld {
     type: MeldType;
     cards: Card[];
+}
+
+// Lobby Score Tracking
+export interface LobbyScore {
+    [playerUid: string]: {
+        totalScore: number;
+        gamesPlayed: number;
+        gamesWon: number;
+        bestHand: number; // lowest score in a single game
+    };
+}
+
+// Game Score (per player, per game)
+export interface GameScore {
+    playerUid: string;
+    playerName: string;
+    score: number;
+    melds: Meld[];
+    isWinner: boolean;
+    declarationType: 'valid' | 'invalid' | 'first-drop' | 'middle-drop' | null;
 }
 
 // Game State interface
@@ -43,4 +65,16 @@ export interface GameState {
     players: Record<string, Player>;
     createdAt: number;
     winner?: string | null;
+    scores?: GameScore[]; // final scores after game completion
+}
+
+// Lobby interface
+export interface Lobby {
+    lobbyId: string;
+    hostUid: string;
+    status: 'waiting' | 'in-game' | 'finished';
+    currentGameId: string | null;
+    gameCount: number;
+    players: Record<string, Player>;
+    scores?: LobbyScore;
 }

@@ -2,12 +2,14 @@ import { useParams, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { gameService } from "../services/game.service";
+import { lobbyService } from "../services/lobby.service";
 import type { GameState, Meld } from "../model";
 import Card from "../components/Card";
 import HandBar from "../components/HandBar";
 import ActionBar from "../components/ActionBar";
 import PlayerList from "../components/PlayerList";
 import DeclareModal from "../components/DeclareModal";
+import ScoreModal from "../components/ScoreModal";
 
 // Card back component for closed pile
 const CardBack = () => (
@@ -26,6 +28,7 @@ export default function Game() {
     const [error, setError] = useState<string | null>(null);
     const [isDragOverDiscard, setIsDragOverDiscard] = useState(false);
     const [showDeclareModal, setShowDeclareModal] = useState(false);
+    const [showScoreModal, setShowScoreModal] = useState(false);
 
     // Guard: must be authenticated and have a gameId
     useEffect(() => {
@@ -40,6 +43,12 @@ export default function Game() {
 
         const unsubscribe = gameService.subscribeToGame(gameId, (state) => {
             setGameState(state);
+            
+            // Show score modal when game is completed and scores are available
+            if (state?.status === 'completed' && state.scores && state.scores.length > 0) {
+                setShowScoreModal(true);
+                setShowDeclareModal(false); // Close declare modal if open
+            }
             
             // Clear error when game state updates successfully
             setError(null);
@@ -146,6 +155,22 @@ export default function Game() {
                 setError(err instanceof Error ? err.message : 'Failed to discard card');
                 console.error(err);
             }
+        }
+    };
+
+    // Handle back to lobby from score modal
+    const handleBackToLobby = async () => {
+        if (!gameState?.lobbyId) return;
+        
+        try {
+            // End the current game in lobby
+            await lobbyService.endCurrentGame(gameState.lobbyId);
+            // Navigate back to lobby
+            navigate(`/lobby/${gameState.lobbyId}`);
+        } catch (err) {
+            console.error('Failed to return to lobby:', err);
+            // Fallback: just navigate
+            navigate(`/lobby/${gameState.lobbyId}`);
         }
     };
 
@@ -302,6 +327,17 @@ export default function Game() {
                     hand={playerHand}
                     onDeclare={handleDeclareSubmit}
                     onClose={() => setShowDeclareModal(false)}
+                />
+            )}
+
+            {/* Score Modal */}
+            {showScoreModal && gameState?.scores && (
+                <ScoreModal
+                    scores={gameState.scores}
+                    gameId={gameId}
+                    lobbyId={gameState.lobbyId}
+                    isHost={!!player.isHost}
+                    onBackToLobby={handleBackToLobby}
                 />
             )}
         </div>
