@@ -20,6 +20,7 @@ function Lobby() {
     const [copied, setCopied] = useState(false);
     const [isStarting, setIsStarting] = useState(false);
     const [lobbyScores, setLobbyScores] = useState<LobbyScore>({});
+    const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
 
     // Get player initials for avatar fallback
     const getInitials = (name: string | null) => {
@@ -49,6 +50,11 @@ function Lobby() {
         } catch (err) {
             console.error('Failed to copy:', err);
         }
+    };
+
+    // Handle image load error
+    const handleImageError = (uid: string) => {
+        setImageErrors(prev => new Set(prev).add(uid));
     };
 
     // Leave lobby
@@ -250,72 +256,65 @@ function Lobby() {
                     <h2 className="text-xl font-bold text-gray-800 mb-4">Players</h2>
                     
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-4">
-                        {players.map((p) => (
-                            <div
-                                key={p.uid}
-                                className="
-                                    bg-gradient-to-br from-green-50 to-blue-50 
-                                    rounded-xl p-4 
-                                    border-2 border-green-200
-                                    hover:border-green-400
-                                    transition-all duration-200
-                                    hover:shadow-lg
-                                    flex flex-col items-center gap-2
-                                "
-                            >
-                                {/* Avatar */}
-                                <div className="relative">
-                                    {p.photoURL ? (
-                                        <img
-                                            src={p.photoURL}
-                                            alt={p.name || 'Player'}
-                                            className="w-16 h-16 rounded-full border-4 border-white shadow-lg"
-                                            onError={(e) => {
-                                                // Fallback to initials if image fails
-                                                const target = e.target as HTMLImageElement;
-                                                target.style.display = 'none';
-                                                const parent = target.parentElement;
-                                                if (parent) {
-                                                    const fallback = document.createElement('div');
-                                                    fallback.className = `w-16 h-16 rounded-full ${getAvatarColor(p.uid)} flex items-center justify-center text-white font-bold text-xl border-4 border-white shadow-lg`;
-                                                    fallback.textContent = getInitials(p.name);
-                                                    parent.appendChild(fallback);
-                                                }
-                                            }}
-                                        />
-                                    ) : (
-                                        <div className={`
-                                            w-16 h-16 rounded-full 
-                                            ${getAvatarColor(p.uid)}
-                                            flex items-center justify-center
-                                            text-white font-bold text-xl
-                                            border-4 border-white shadow-lg
-                                        `}>
-                                            {getInitials(p.name)}
-                                        </div>
-                                    )}
-                                    
-                                    {/* Host Badge */}
-                                    {p.isHost && (
-                                        <div className="absolute -top-1 -right-1 bg-yellow-400 text-yellow-900 rounded-full p-1.5 border-2 border-white shadow">
-                                            <span className="text-xs">👑</span>
-                                        </div>
-                                    )}
-                                </div>
-                                
-                                {/* Player Name */}
-                                <div className="text-center">
-                                    <div className="font-bold text-gray-800 text-sm truncate max-w-[100px]">
-                                        {p.name}
+                        {players.map((p) => {
+                            const showImage = p.photoURL && !imageErrors.has(p.uid || '');
+                            
+                            return (
+                                <div
+                                    key={p.uid}
+                                    className="
+                                        bg-gradient-to-br from-green-50 to-blue-50 
+                                        rounded-xl p-4 
+                                        border-2 border-green-200
+                                        hover:border-green-400
+                                        transition-all duration-200
+                                        hover:shadow-lg
+                                        flex flex-col items-center gap-2
+                                    "
+                                >
+                                    {/* Avatar */}
+                                    <div className="relative">
+                                        {showImage ? (
+                                            <img
+                                                src={p.photoURL!}
+                                                alt={p.name || 'Player'}
+                                                className="w-16 h-16 rounded-full border-4 border-white shadow-lg"
+                                                onError={() => handleImageError(p.uid || '')}
+                                            />
+                                        ) : (
+                                            <div className={`
+                                                w-16 h-16 rounded-full 
+                                                ${getAvatarColor(p.uid)}
+                                                flex items-center justify-center
+                                                text-white font-bold text-xl
+                                                border-4 border-white shadow-lg
+                                            `}>
+                                                {getInitials(p.name)}
+                                            </div>
+                                        )}
+                                        
+                                        {/* Host Badge */}
+                                        {p.isHost && (
+                                            <div className="absolute -top-1 -right-1 bg-yellow-400 text-yellow-900 rounded-full p-1.5 border-2 border-white shadow">
+                                                <span className="text-xs">👑</span>
+                                            </div>
+                                        )}
                                     </div>
-                                    {p.isHost && (
-                                        <div className="text-xs font-semibold text-yellow-700">
-                                            Host
+                                    
+                                    {/* Player Name */}
+                                    <div className="text-center">
+                                        <div className="font-bold text-gray-800 text-sm truncate max-w-[100px]">
+                                            {p.name}
                                         </div>
-                                    )}
+                                        {p.isHost && (
+                                            <div className="text-xs font-semibold text-yellow-700">
+                                                Host
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                         
                         {/* Empty Slots */}
                         {Array.from({ length: Math.max(0, maxPlayers - players.length) }).map((_, i) => (

@@ -42,10 +42,10 @@ export default function Card({
     
     // Responsive text sizing - smaller on mobile for mini cards
     const rankSizeClass = size === 'mini' 
-        ? 'text-xs xs:text-sm sm:text-base md:text-lg font-bold'
+        ? 'text-xs sm:text-sm md:text-base lg:text-lg font-bold'
         : 'text-lg font-bold';
     const suitSizeClass = size === 'mini'
-        ? 'text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl leading-none'
+        ? 'text-sm sm:text-base md:text-lg lg:text-xl leading-none'
         : 'text-2xl leading-none';
     
     return (

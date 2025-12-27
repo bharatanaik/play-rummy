@@ -145,7 +145,8 @@ class LobbyService {
             if (gameScore.isWinner) {
                 currentPlayerScore.gamesWon += 1;
             }
-            if (gameScore.score < currentPlayerScore.bestHand) {
+            // Only update bestHand for non-zero scores (actual hands played, not wins)
+            if (gameScore.score > 0 && gameScore.score < currentPlayerScore.bestHand) {
                 currentPlayerScore.bestHand = gameScore.score;
             }
 

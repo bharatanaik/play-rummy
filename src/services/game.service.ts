@@ -277,10 +277,28 @@ class GameService {
         );
 
         if (activePlayers.length === 1 && activePlayers[0].uid) {
+            const winnerId = activePlayers[0].uid;
+            
+            // Calculate scores for all players
+            const scores: GameScore[] = [];
+            Object.values(gameState.players).forEach((p) => {
+                if (!p.uid) return;
+
+                scores.push({
+                    playerUid: p.uid,
+                    playerName: p.name || 'Player',
+                    score: p.uid === winnerId ? 0 : (p.score || dropPenalty),
+                    melds: [],
+                    isWinner: p.uid === winnerId,
+                    declarationType: p.uid === winnerId ? 'valid' : (p.hasDropped ? dropType : null),
+                });
+            });
+
             // Last player standing wins
             await update(gameRef, {
                 status: 'completed',
-                winner: activePlayers[0].uid,
+                winner: winnerId,
+                scores,
             });
         }
     }
@@ -307,13 +325,33 @@ class GameService {
         const validation = validationService.validateDeclaration(melds);
         
         if (!validation.valid) {
-            // Invalid declaration - player gets 80 points penalty
+            // Invalid declaration - player gets 80 points penalty, calculate scores for all
+            const scores: GameScore[] = [];
+            
+            Object.values(gameState.players).forEach((p) => {
+                if (!p.uid) return;
+
+                const isInvalidDeclarer = p.uid === playerId;
+                const score = isInvalidDeclarer ? 80 : 0; // Invalid declarer gets 80, others get 0
+
+                scores.push({
+                    playerUid: p.uid,
+                    playerName: p.name || 'Player',
+                    score,
+                    melds: isInvalidDeclarer ? melds : [],
+                    isWinner: false, // No winner on invalid declaration
+                    declarationType: isInvalidDeclarer ? 'invalid' : null,
+                });
+            });
+
             await update(gameRef, {
                 status: 'completed',
                 [`players/${playerId}/hasDeclared`]: true,
                 [`players/${playerId}/score`]: 80,
                 [`players/${playerId}/melds`]: melds,
+                scores,
             });
+            
             throw new Error(validation.reason || 'Invalid declaration');
         }
 
