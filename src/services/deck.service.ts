@@ -3,18 +3,21 @@ import type { Card, Rank, Suit } from '../model';
 class DeckService {
     private suits: Suit[] = ['hearts', 'diamonds', 'clubs', 'spades'];
     private ranks: Rank[] = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+    private globalCardId = 0; // Global counter for unique card IDs
 
     /**
      * Create a standard 52-card deck
      */
-    private createSingleDeck(): Card[] {
+    private createSingleDeck(deckNumber: number): Card[] {
         const deck: Card[] = [];
-        let cardId = 0;
+        const timestamp = Date.now();
 
         for (const suit of this.suits) {
             for (const rank of this.ranks) {
+                // Generate truly unique ID using timestamp, deck number, and global counter
+                const id = `card-${timestamp}-${deckNumber}-${this.globalCardId++}`;
                 deck.push({
-                    id: `${suit}-${rank}-${cardId++}`,
+                    id,
                     suit,
                     rank,
                     isPrintedJoker: false,
@@ -29,7 +32,9 @@ class DeckService {
     /**
      * Create a single printed joker card
      */
-    private createPrintedJoker(id: string): Card {
+    private createPrintedJoker(): Card {
+        const timestamp = Date.now();
+        const id = `card-${timestamp}-joker-${this.globalCardId++}`;
         return {
             id,
             suit: 'joker',
@@ -45,13 +50,33 @@ class DeckService {
     createDeck(): Card[] {
         const deck: Card[] = [];
 
-        // Add two standard decks
-        deck.push(...this.createSingleDeck());
-        deck.push(...this.createSingleDeck());
+        console.log('[DECK] Creating new deck...');
+        
+        // Add two standard decks with unique IDs
+        deck.push(...this.createSingleDeck(1));
+        deck.push(...this.createSingleDeck(2));
 
         // Add 2 printed jokers
-        deck.push(this.createPrintedJoker('printed-joker-1'));
-        deck.push(this.createPrintedJoker('printed-joker-2'));
+        deck.push(this.createPrintedJoker());
+        deck.push(this.createPrintedJoker());
+
+        console.log('[DECK] Created deck with', deck.length, 'cards');
+
+        // Validation: Check for duplicate IDs
+        const ids = deck.map(c => c.id);
+        const uniqueIds = new Set(ids);
+        if (ids.length !== uniqueIds.size) {
+            console.error('[DECK] ERROR: Duplicate card IDs detected!');
+            throw new Error('Duplicate card IDs detected in deck creation');
+        }
+
+        // Validation: Verify card count
+        if (deck.length !== 106) {
+            console.error('[DECK] ERROR: Expected 106 cards, got', deck.length);
+            throw new Error(`Invalid deck size: ${deck.length} (expected 106)`);
+        }
+
+        console.log('[DECK] Validation passed: All card IDs are unique');
 
         return deck;
     }

@@ -1,4 +1,4 @@
-import { ref, set, update, onValue, off, get, type DatabaseReference } from 'firebase/database';
+import { ref, set, update, onValue, off, get, runTransaction, type DatabaseReference } from 'firebase/database';
 import { db } from '../firebase/config';
 import type { GameState, Player, Meld, GameScore } from '../model';
 import { deckService } from './deck.service';
@@ -13,11 +13,15 @@ class GameService {
             throw new Error('Need at least 2 players to start a game');
         }
 
+        console.log('[GAME] Initializing game:', gameId, 'with', players.length, 'players');
+
         // Create and shuffle deck
         const deck = deckService.createDeck();
+        console.log('[GAME] Created deck with', deck.length, 'cards');
         
         // Select wild joker
         const wildJokerRank = deckService.selectWildJoker();
+        console.log('[GAME] Wild joker rank:', wildJokerRank);
         
         // Mark wild jokers in deck
         const markedDeck = deckService.markWildJokers(deck, wildJokerRank);
@@ -25,8 +29,36 @@ class GameService {
         // Deal cards
         const { hands, closedPile, openPile } = deckService.dealCards(markedDeck, players.length, 13);
         
+        console.log('[GAME] Dealt cards - Hands:', hands.length, 'players');
+        console.log('[GAME] Cards per hand:', hands.map(h => h.length));
+        console.log('[GAME] Closed pile:', closedPile.length, 'cards');
+        console.log('[GAME] Open pile:', openPile.length, 'cards');
+
+        // Validation: Total card count
+        const totalCards = hands.flat().length + closedPile.length + openPile.length;
+        console.log('[GAME] Total cards after deal:', totalCards, 'Expected: 106');
+        
+        if (totalCards !== 106) {
+            console.error('[GAME] ERROR: Card count mismatch:', totalCards);
+            throw new Error(`Card count mismatch: ${totalCards} (expected 106)`);
+        }
+
+        // Validation: Check for duplicates across all cards
+        const allCards = [...hands.flat(), ...closedPile, ...openPile];
+        const allIds = allCards.map(c => c.id);
+        const uniqueIds = new Set(allIds);
+        if (allIds.length !== uniqueIds.size) {
+            console.error('[GAME] ERROR: Duplicate cards detected after deal');
+            const duplicates = allIds.filter((id, index) => allIds.indexOf(id) !== index);
+            console.error('[GAME] Duplicate IDs:', [...new Set(duplicates)]);
+            throw new Error('Duplicate cards detected after deal');
+        }
+        
+        console.log('[GAME] Validation passed: All cards unique, total count correct');
+        
         // Create turn order (randomize players)
         const turnOrder = deckService.shuffle(players.map(p => p.uid!));
+        console.log('[GAME] Turn order:', turnOrder);
         
         // Build player objects with hands
         const playersWithHands: Record<string, Player> = {};
@@ -58,7 +90,9 @@ class GameService {
         };
 
         // Save to Firebase
+        console.log('[GAME] Saving game state to Firebase');
         await set(ref(db, `games/${gameId}`), gameState);
+        console.log('[GAME] Game initialized successfully');
     }
 
     /**
@@ -66,41 +100,62 @@ class GameService {
      */
     async drawFromClosed(gameId: string, playerId: string): Promise<void> {
         const gameRef = ref(db, `games/${gameId}`);
-        const snapshot = await get(gameRef);
         
-        if (!snapshot.exists()) {
-            throw new Error('Game not found');
-        }
+        console.log('[DRAW] Player', playerId, 'attempting to draw from closed pile');
 
-        const gameState: GameState = snapshot.val();
+        await runTransaction(gameRef, (currentGame) => {
+            if (!currentGame) {
+                console.error('[DRAW] ERROR: Game not found');
+                throw new Error('Game not found');
+            }
 
-        // Validate turn
-        if (gameState.currentTurn !== playerId) {
-            throw new Error('Not your turn');
-        }
+            const gameState: GameState = currentGame;
 
-        // Validate player hasn't already drawn
-        if (gameState.players[playerId]?.hasDrawn) {
-            throw new Error('Already drawn this turn');
-        }
+            // Validate turn
+            if (gameState.currentTurn !== playerId) {
+                console.error('[DRAW] ERROR: Not player\'s turn. Current:', gameState.currentTurn, 'Attempting:', playerId);
+                throw new Error('Not your turn');
+            }
 
-        // Validate closed pile has cards
-        if (gameState.closedPile.length === 0) {
-            throw new Error('Closed pile is empty');
-        }
+            // Validate player hasn't already drawn
+            if (gameState.players[playerId]?.hasDrawn) {
+                console.error('[DRAW] ERROR: Player has already drawn this turn');
+                throw new Error('Already drawn this turn');
+            }
 
-        // Draw top card from closed pile
-        const drawnCard = gameState.closedPile[0];
-        const newClosedPile = gameState.closedPile.slice(1);
-        
-        // Add to player's hand
-        const playerHand = [...(gameState.players[playerId].hand || []), drawnCard];
-        
-        // Update game state
-        await update(gameRef, {
-            closedPile: newClosedPile,
-            [`players/${playerId}/hand`]: deckService.sortHand(playerHand),
-            [`players/${playerId}/hasDrawn`]: true,
+            // Validate closed pile has cards
+            if (!gameState.closedPile || gameState.closedPile.length === 0) {
+                console.error('[DRAW] ERROR: Closed pile is empty');
+                throw new Error('Closed pile is empty');
+            }
+
+            console.log('[DRAW] Closed pile before:', gameState.closedPile.length, 'cards');
+
+            // Draw last card from closed pile (top of deck)
+            const drawnCard = gameState.closedPile[gameState.closedPile.length - 1];
+            const newClosedPile = gameState.closedPile.slice(0, -1);
+            
+            console.log('[DRAW] Drew card:', drawnCard.id, drawnCard.rank, 'of', drawnCard.suit);
+            
+            // Add to player's hand
+            const playerHand = [...(gameState.players[playerId].hand || []), drawnCard];
+            
+            console.log('[DRAW] Hand size before:', gameState.players[playerId].hand?.length || 0, 'after:', playerHand.length);
+
+            // Validate hand size after draw
+            if (playerHand.length !== 14) {
+                console.error('[DRAW] ERROR: Invalid hand size after draw:', playerHand.length, 'expected 14');
+            }
+            
+            // Update game state atomically
+            gameState.closedPile = newClosedPile;
+            gameState.players[playerId].hand = deckService.sortHand(playerHand);
+            gameState.players[playerId].hasDrawn = true;
+
+            console.log('[DRAW] Closed pile after:', newClosedPile.length, 'cards');
+            console.log('[DRAW] Draw successful');
+
+            return gameState;
         });
     }
 
@@ -109,41 +164,62 @@ class GameService {
      */
     async drawFromOpen(gameId: string, playerId: string): Promise<void> {
         const gameRef = ref(db, `games/${gameId}`);
-        const snapshot = await get(gameRef);
         
-        if (!snapshot.exists()) {
-            throw new Error('Game not found');
-        }
+        console.log('[DRAW] Player', playerId, 'attempting to draw from open pile');
 
-        const gameState: GameState = snapshot.val();
+        await runTransaction(gameRef, (currentGame) => {
+            if (!currentGame) {
+                console.error('[DRAW] ERROR: Game not found');
+                throw new Error('Game not found');
+            }
 
-        // Validate turn
-        if (gameState.currentTurn !== playerId) {
-            throw new Error('Not your turn');
-        }
+            const gameState: GameState = currentGame;
 
-        // Validate player hasn't already drawn
-        if (gameState.players[playerId]?.hasDrawn) {
-            throw new Error('Already drawn this turn');
-        }
+            // Validate turn
+            if (gameState.currentTurn !== playerId) {
+                console.error('[DRAW] ERROR: Not player\'s turn. Current:', gameState.currentTurn, 'Attempting:', playerId);
+                throw new Error('Not your turn');
+            }
 
-        // Validate open pile has cards
-        if (gameState.openPile.length === 0) {
-            throw new Error('Open pile is empty');
-        }
+            // Validate player hasn't already drawn
+            if (gameState.players[playerId]?.hasDrawn) {
+                console.error('[DRAW] ERROR: Player has already drawn this turn');
+                throw new Error('Already drawn this turn');
+            }
 
-        // Draw top card from open pile
-        const drawnCard = gameState.openPile[gameState.openPile.length - 1];
-        const newOpenPile = gameState.openPile.slice(0, -1);
-        
-        // Add to player's hand
-        const playerHand = [...(gameState.players[playerId].hand || []), drawnCard];
-        
-        // Update game state
-        await update(gameRef, {
-            openPile: newOpenPile,
-            [`players/${playerId}/hand`]: deckService.sortHand(playerHand),
-            [`players/${playerId}/hasDrawn`]: true,
+            // Validate open pile has cards
+            if (!gameState.openPile || gameState.openPile.length === 0) {
+                console.error('[DRAW] ERROR: Open pile is empty');
+                throw new Error('Open pile is empty');
+            }
+
+            console.log('[DRAW] Open pile before:', gameState.openPile.length, 'cards');
+
+            // Draw top card from open pile (last card in array)
+            const drawnCard = gameState.openPile[gameState.openPile.length - 1];
+            const newOpenPile = gameState.openPile.slice(0, -1);
+            
+            console.log('[DRAW] Drew card:', drawnCard.id, drawnCard.rank, 'of', drawnCard.suit);
+            
+            // Add to player's hand
+            const playerHand = [...(gameState.players[playerId].hand || []), drawnCard];
+            
+            console.log('[DRAW] Hand size before:', gameState.players[playerId].hand?.length || 0, 'after:', playerHand.length);
+
+            // Validate hand size after draw
+            if (playerHand.length !== 14) {
+                console.error('[DRAW] ERROR: Invalid hand size after draw:', playerHand.length, 'expected 14');
+            }
+            
+            // Update game state atomically
+            gameState.openPile = newOpenPile;
+            gameState.players[playerId].hand = deckService.sortHand(playerHand);
+            gameState.players[playerId].hasDrawn = true;
+
+            console.log('[DRAW] Open pile after:', newOpenPile.length, 'cards');
+            console.log('[DRAW] Draw successful');
+
+            return gameState;
         });
     }
 
@@ -152,49 +228,72 @@ class GameService {
      */
     async discard(gameId: string, playerId: string, cardId: string): Promise<void> {
         const gameRef = ref(db, `games/${gameId}`);
-        const snapshot = await get(gameRef);
         
-        if (!snapshot.exists()) {
-            throw new Error('Game not found');
-        }
+        console.log('[DISCARD] Player', playerId, 'attempting to discard card:', cardId);
 
-        const gameState: GameState = snapshot.val();
+        await runTransaction(gameRef, (currentGame) => {
+            if (!currentGame) {
+                console.error('[DISCARD] ERROR: Game not found');
+                throw new Error('Game not found');
+            }
 
-        // Validate turn
-        if (gameState.currentTurn !== playerId) {
-            throw new Error('Not your turn');
-        }
+            const gameState: GameState = currentGame;
 
-        // Validate player has drawn
-        if (!gameState.players[playerId]?.hasDrawn) {
-            throw new Error('Must draw a card first');
-        }
+            // Validate turn
+            if (gameState.currentTurn !== playerId) {
+                console.error('[DISCARD] ERROR: Not player\'s turn. Current:', gameState.currentTurn, 'Attempting:', playerId);
+                throw new Error('Not your turn');
+            }
 
-        // Find and remove card from player's hand
-        const playerHand = gameState.players[playerId].hand || [];
-        const cardIndex = playerHand.findIndex(c => c.id === cardId);
-        
-        if (cardIndex === -1) {
-            throw new Error('Card not in hand');
-        }
+            // Validate player has drawn
+            if (!gameState.players[playerId]?.hasDrawn) {
+                console.error('[DISCARD] ERROR: Must draw a card first');
+                throw new Error('Must draw a card first');
+            }
 
-        const discardedCard = playerHand[cardIndex];
-        const newHand = playerHand.filter(c => c.id !== cardId);
-        
-        // Add to open pile
-        const newOpenPile = [...gameState.openPile, discardedCard];
-        
-        // Get next player
-        const currentTurnIndex = gameState.turnOrder.indexOf(playerId);
-        const nextTurnIndex = (currentTurnIndex + 1) % gameState.turnOrder.length;
-        const nextPlayerId = gameState.turnOrder[nextTurnIndex];
-        
-        // Update game state
-        await update(gameRef, {
-            openPile: newOpenPile,
-            [`players/${playerId}/hand`]: deckService.sortHand(newHand),
-            [`players/${playerId}/hasDrawn`]: false,
-            currentTurn: nextPlayerId,
+            // Find and remove card from player's hand
+            const playerHand = gameState.players[playerId].hand || [];
+            const cardIndex = playerHand.findIndex(c => c.id === cardId);
+            
+            if (cardIndex === -1) {
+                console.error('[DISCARD] ERROR: Card not in hand:', cardId);
+                console.error('[DISCARD] Hand cards:', playerHand.map(c => c.id));
+                throw new Error('Card not in hand');
+            }
+
+            const discardedCard = playerHand[cardIndex];
+            console.log('[DISCARD] Discarding card:', discardedCard.id, discardedCard.rank, 'of', discardedCard.suit);
+            console.log('[DISCARD] Hand size before:', playerHand.length);
+
+            // Remove card from hand (immutably)
+            const newHand = playerHand.filter(c => c.id !== cardId);
+            
+            console.log('[DISCARD] Hand size after:', newHand.length);
+
+            // Validate hand size after discard
+            if (newHand.length !== 13) {
+                console.error('[DISCARD] ERROR: Invalid hand size after discard:', newHand.length, 'expected 13');
+            }
+            
+            // Add to open pile
+            const newOpenPile = [...gameState.openPile, discardedCard];
+            
+            // Get next player
+            const currentTurnIndex = gameState.turnOrder.indexOf(playerId);
+            const nextTurnIndex = (currentTurnIndex + 1) % gameState.turnOrder.length;
+            const nextPlayerId = gameState.turnOrder[nextTurnIndex];
+            
+            console.log('[TURN] Turn advancing from', playerId, 'to', nextPlayerId);
+            
+            // Update game state atomically
+            gameState.openPile = newOpenPile;
+            gameState.players[playerId].hand = deckService.sortHand(newHand);
+            gameState.players[playerId].hasDrawn = false;
+            gameState.currentTurn = nextPlayerId;
+
+            console.log('[DISCARD] Discard successful');
+
+            return gameState;
         });
     }
 
