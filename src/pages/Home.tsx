@@ -9,14 +9,14 @@ export default function Login () {
 
     useEffect(()=>{
         if(user){
-            let redirectURL =  new URLSearchParams(location.search).get('next')
+            const redirectURL =  new URLSearchParams(location.search).get('next')
             console.log("Redirect: ", redirectURL);
             if(redirectURL)
                 navigate(redirectURL);
             else
                 navigate('/dashboard');
         }
-    }, [user, navigate]);
+    }, [user, navigate, location.search]);
  
     return (
         <>

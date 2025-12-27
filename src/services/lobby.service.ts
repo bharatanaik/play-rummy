@@ -8,6 +8,7 @@ import {
 } from "firebase/database";
 import { db } from "../firebase/config";
 import type { Player } from "../model";
+import { gameService } from "./game.service";
 
 class LobbyService {
 
@@ -87,17 +88,21 @@ class LobbyService {
 
         const gameId = this.generateGameId();
 
+        // Get players from lobby
+        const players: Player[] = Object.values(lobby.players || {});
+        
+        if (players.length < 2) {
+            throw new Error("Need at least 2 players to start a game");
+        }
+
+        // Initialize game with players
+        await gameService.initializeGame(gameId, lobbyId, players);
+
+        // Update lobby status
         await update(lobbyRef, {
             status: "in-game",
             currentGameId: gameId,
             gameCount: (lobby.gameCount || 0) + 1
-        });
-
-        await set(ref(db, `games/${gameId}`), {
-            lobbyId,
-            gameNumber: (lobby.gameCount || 0) + 1,
-            status: "in-progress",
-            createdAt: Date.now()
         });
 
         return gameId;
