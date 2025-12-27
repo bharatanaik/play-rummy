@@ -203,35 +203,37 @@ export default function Game() {
     const topOpenCard = gameState.openPile.at(-1);
 
     return (
-        <div className="game-table pb-32">
+        <div className="game-table pb-24">
             <div className="max-w-7xl mx-auto">
-                {/* Header */}
-                <div className="bg-green-900/80 text-white p-4 shadow-lg">
+                {/* Header - COMPACT */}
+                <div className="bg-green-900/80 text-white p-2 shadow-lg">
                     <div className="flex justify-between items-center">
                         <div>
-                            <h1 className="text-xl font-bold">Indian Rummy</h1>
-                            <p className="text-sm opacity-90">Game ID: {gameId}</p>
+                            <h1 className="text-lg font-bold">Indian Rummy</h1>
+                            <p className="text-xs opacity-90">Game ID: {gameId}</p>
                         </div>
                         {gameState.wildJokerRank && (
-                            <div className="text-center bg-yellow-500 text-black px-3 py-1 rounded-lg">
-                                <div className="text-xs font-semibold">Wild Joker</div>
-                                <div className="text-lg font-bold">{gameState.wildJokerRank}</div>
+                            <div className="text-center bg-yellow-500 text-black px-2 py-1 rounded-lg">
+                                <div className="text-[0.65rem] font-semibold">Wild Joker</div>
+                                <div className="text-base font-bold">{gameState.wildJokerRank}</div>
                             </div>
                         )}
                     </div>
                 </div>
 
-                {/* Player List */}
-                <PlayerList players={gameState.players} currentTurn={gameState.currentTurn} />
+                {/* Player List - COMPACT */}
+                <div className="py-1">
+                    <PlayerList players={gameState.players} currentTurn={gameState.currentTurn} />
+                </div>
 
-                {/* Turn Indicator */}
-                <div className="p-4">
+                {/* Turn Indicator - COMPACT */}
+                <div className="px-2 py-2">
                     {isMyTurn ? (
-                        <div className="bg-green-500 text-white px-4 py-2 rounded-lg text-center font-bold">
+                        <div className="bg-green-500 text-white px-3 py-1.5 rounded-lg text-center text-sm font-bold">
                             🎮 Your Turn
                         </div>
                     ) : (
-                        <div className="bg-gray-700 text-white px-4 py-2 rounded-lg text-center">
+                        <div className="bg-gray-700 text-white px-3 py-1.5 rounded-lg text-center text-sm">
                             ⏳ Waiting for other player...
                         </div>
                     )}
@@ -239,17 +241,17 @@ export default function Game() {
 
                 {/* Error Message */}
                 {error && (
-                    <div className="mx-4 mb-4 bg-red-500 text-white px-4 py-2 rounded-lg">
+                    <div className="mx-2 mb-2 bg-red-500 text-white px-3 py-2 rounded-lg text-sm">
                         {error}
                     </div>
                 )}
 
-                {/* Game Area: Closed and Open Piles */}
-                <div className="flex justify-center gap-8 p-8">
-                    {/* Closed Pile */}
+                {/* Game Area: Closed and Open Piles - SMALLER */}
+                <div className="flex justify-center gap-3 py-2">
+                    {/* Closed Pile - SMALLER */}
                     <div className="text-center">
-                        <div className="text-white font-semibold mb-2">Closed Pile</div>
-                        <div className="relative">
+                        <div className="text-white text-xs font-semibold mb-1">Closed Pile</div>
+                        <div className="relative scale-75 sm:scale-90 md:scale-100">
                             <CardBack />
                             <div className="absolute -top-1 -left-1 opacity-50">
                                 <CardBack />
@@ -258,18 +260,18 @@ export default function Game() {
                                 <CardBack />
                             </div>
                         </div>
-                        <div className="text-white text-sm mt-2">
+                        <div className="text-white text-xs mt-1">
                             {gameState.closedPile.length} cards
                         </div>
                     </div>
 
-                    {/* Open Pile - Drop Zone for Discard */}
+                    {/* Open Pile - Drop Zone for Discard - SMALLER */}
                     <div className="text-center">
-                        <div className="text-white font-semibold mb-2">Open Pile (Discard Here)</div>
+                        <div className="text-white text-xs font-semibold mb-1">Open Pile</div>
                         <div
                             className={`
-                                relative transition-all duration-200
-                                ${isDragOverDiscard ? 'scale-110 ring-4 ring-yellow-400' : ''}
+                                relative transition-all duration-200 scale-75 sm:scale-90 md:scale-100
+                                ${isDragOverDiscard ? 'scale-90 sm:scale-100 md:scale-110 ring-4 ring-yellow-400' : ''}
                             `}
                             onDragOver={handleDiscardDragOver}
                             onDragLeave={handleDiscardDragLeave}
@@ -279,26 +281,26 @@ export default function Game() {
                                 <Card {...topOpenCard} size="small" />
                             ) : (
                                 <div className="card-small bg-gray-700 border-gray-600 flex items-center justify-center">
-                                    <div className="text-white text-sm">Empty</div>
+                                    <div className="text-white text-xs">Empty</div>
                                 </div>
                             )}
                             {isDragOverDiscard && (
                                 <div className="absolute inset-0 bg-yellow-400/30 rounded-lg flex items-center justify-center">
-                                    <div className="text-white font-bold text-lg">Drop to Discard</div>
+                                    <div className="text-white font-bold text-sm">Drop Here</div>
                                 </div>
                             )}
                         </div>
-                        <div className="text-white text-sm mt-2">
+                        <div className="text-white text-xs mt-1">
                             {gameState.openPile.length} cards
                         </div>
                     </div>
                 </div>
 
-                {/* Player Info */}
-                <div className="px-4 pb-4">
-                    <div className="bg-white/90 rounded-lg p-3 shadow">
-                        <div className="text-sm text-gray-600">Your Hand ({playerHand.length} cards)</div>
-                        <div className="text-xs text-gray-500 mt-1">
+                {/* Player Info - COMPACT */}
+                <div className="px-2 pb-2">
+                    <div className="bg-white/90 rounded-lg p-2 shadow">
+                        <div className="text-xs text-gray-600">Your Hand ({playerHand.length} cards)</div>
+                        <div className="text-[0.65rem] text-gray-500 mt-0.5">
                             {hasDrawn ? '✓ Drawn - Select a card to discard' : 'Draw a card to continue'}
                         </div>
                     </div>

@@ -18,31 +18,31 @@ export default function ActionBar({
     onDeclare,
 }: ActionBarProps) {
     return (
-        <div className="action-bar p-3">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 max-w-4xl mx-auto">
+        <div className="action-bar p-2 safe-area-bottom">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 max-w-4xl mx-auto">
                 {/* Draw from Closed Pile */}
                 <button
                     onClick={onDrawClosed}
                     disabled={!isMyTurn || hasDrawn}
-                    className="btn-primary touch-target text-sm md:text-base"
+                    className="btn-primary py-2 px-2 text-xs sm:text-sm font-semibold rounded-lg shadow active:scale-95 transition-transform disabled:opacity-50 touch-target"
                 >
-                    🂠 Draw Closed
+                    🂠 Closed
                 </button>
 
                 {/* Draw from Open Pile */}
                 <button
                     onClick={onDrawOpen}
                     disabled={!isMyTurn || hasDrawn}
-                    className="btn-secondary touch-target text-sm md:text-base"
+                    className="btn-secondary py-2 px-2 text-xs sm:text-sm font-semibold rounded-lg shadow active:scale-95 transition-transform disabled:opacity-50 touch-target"
                 >
-                    🃏 Draw Open
+                    🃏 Open
                 </button>
 
                 {/* Discard */}
                 <button
                     onClick={onDiscard}
                     disabled={!isMyTurn || !hasDrawn || !hasSelectedCard}
-                    className="btn-primary touch-target text-sm md:text-base"
+                    className="btn-primary py-2 px-2 text-xs sm:text-sm font-semibold rounded-lg shadow active:scale-95 transition-transform disabled:opacity-50 touch-target"
                 >
                     ♠️ Discard
                 </button>
@@ -51,7 +51,7 @@ export default function ActionBar({
                 <button
                     onClick={onDeclare}
                     disabled={!isMyTurn || hasDrawn}
-                    className="btn-success touch-target text-sm md:text-base"
+                    className="btn-success py-2 px-2 text-xs sm:text-sm font-semibold rounded-lg shadow active:scale-95 transition-transform disabled:opacity-50 touch-target"
                 >
                     🏆 Declare
                 </button>
