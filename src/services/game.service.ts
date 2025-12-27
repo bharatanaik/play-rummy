@@ -145,6 +145,7 @@ class GameService {
             // Validate hand size after draw
             if (playerHand.length !== 14) {
                 console.error('[DRAW] ERROR: Invalid hand size after draw:', playerHand.length, 'expected 14');
+                throw new Error(`Invalid hand size after draw: ${playerHand.length} (expected 14)`);
             }
             
             // Update game state atomically
@@ -209,6 +210,7 @@ class GameService {
             // Validate hand size after draw
             if (playerHand.length !== 14) {
                 console.error('[DRAW] ERROR: Invalid hand size after draw:', playerHand.length, 'expected 14');
+                throw new Error(`Invalid hand size after draw: ${playerHand.length} (expected 14)`);
             }
             
             // Update game state atomically
@@ -273,6 +275,7 @@ class GameService {
             // Validate hand size after discard
             if (newHand.length !== 13) {
                 console.error('[DISCARD] ERROR: Invalid hand size after discard:', newHand.length, 'expected 13');
+                throw new Error(`Invalid hand size after discard: ${newHand.length} (expected 13)`);
             }
             
             // Add to open pile

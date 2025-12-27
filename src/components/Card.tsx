@@ -41,7 +41,12 @@ export default function Card({
     // Validation: Check for invalid card data
     if (!id || !suit || !rank) {
         console.error('[CARD] ERROR: Invalid card data:', { id, suit, rank });
-        return null;
+        // Return error card instead of null
+        return (
+            <div className="card-base card-mini bg-red-100 border-red-500 flex items-center justify-center">
+                <div className="text-red-600 text-xs font-bold">ERROR</div>
+            </div>
+        );
     }
 
     const sizeClass = size === 'mini' ? 'card-mini' : 'card-small';
