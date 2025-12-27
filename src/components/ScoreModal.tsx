@@ -1,5 +1,7 @@
 import type { GameScore } from '../model';
 import { useNavigate } from 'react-router';
+import { lobbyService } from '../services/lobby.service';
+import { useState } from 'react';
 
 interface ScoreModalProps {
     scores: GameScore[];
@@ -9,12 +11,22 @@ interface ScoreModalProps {
     onBackToLobby: () => void;
 }
 
-export default function ScoreModal({ scores, gameId, isHost, onBackToLobby }: ScoreModalProps) {
+export default function ScoreModal({ scores, gameId, lobbyId, isHost, onBackToLobby }: ScoreModalProps) {
     const navigate = useNavigate();
+    const [isUpdatingScores, setIsUpdatingScores] = useState(false);
     const winner = scores.find(s => s.isWinner);
 
-    const handleBackToLobby = () => {
-        onBackToLobby();
+    const handleBackToLobby = async () => {
+        // Update lobby scores before going back
+        setIsUpdatingScores(true);
+        try {
+            await lobbyService.updateLobbyScores(lobbyId, scores);
+        } catch (err) {
+            console.error('Failed to update lobby scores:', err);
+        } finally {
+            setIsUpdatingScores(false);
+            onBackToLobby();
+        }
     };
 
     const handleBackToDashboard = () => {
@@ -140,9 +152,10 @@ export default function ScoreModal({ scores, gameId, isHost, onBackToLobby }: Sc
                     <div className="flex flex-col sm:flex-row gap-3 mt-6">
                         <button
                             onClick={handleBackToLobby}
-                            className="flex-1 btn bg-green-500 hover:bg-green-600 text-white px-6 py-3 text-lg font-bold rounded-lg"
+                            disabled={isUpdatingScores}
+                            className="flex-1 btn bg-green-500 hover:bg-green-600 text-white px-6 py-3 text-lg font-bold rounded-lg disabled:opacity-50"
                         >
-                            {isHost ? '🔄 Play Again' : '↩️ Back to Lobby'}
+                            {isUpdatingScores ? 'Updating...' : (isHost ? '🔄 Play Again' : '↩️ Back to Lobby')}
                         </button>
                         <button
                             onClick={handleBackToDashboard}

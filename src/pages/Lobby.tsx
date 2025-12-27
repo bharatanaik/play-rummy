@@ -8,7 +8,8 @@ import { useParams, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { lobbyService } from "../services/lobby.service";
 import { useAuth } from "../context/AuthContext";
-import type { Player } from "../model";
+import type { Player, LobbyScore } from "../model";
+import LobbyScoreboard from "../components/LobbyScoreboard";
 
 function Lobby() {
     const { player } = useAuth();
@@ -18,6 +19,7 @@ function Lobby() {
     const [players, setPlayers] = useState<Player[]>([]);
     const [copied, setCopied] = useState(false);
     const [isStarting, setIsStarting] = useState(false);
+    const [lobbyScores, setLobbyScores] = useState<LobbyScore>({});
 
     // Get player initials for avatar fallback
     const getInitials = (name: string | null) => {
@@ -140,6 +142,12 @@ function Lobby() {
             const lobby = snapshot.val();
             if (!lobby) return;
 
+            // Update scores
+            if (lobby.scores) {
+                setLobbyScores(lobby.scores);
+            }
+
+            // Redirect to game if started
             if (lobby.currentGameId) {
                 navigate(`/game/${lobby.currentGameId}`, { replace: true });
             }
@@ -231,6 +239,11 @@ function Lobby() {
                         </div>
                     </div>
                 </div>
+
+                {/* Scoreboard - only show if games have been played */}
+                {Object.keys(lobbyScores).length > 0 && (
+                    <LobbyScoreboard scores={lobbyScores} players={players} />
+                )}
 
                 {/* Players Grid */}
                 <div className="bg-white shadow-2xl p-6 mb-0">
