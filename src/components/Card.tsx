@@ -52,12 +52,12 @@ export default function Card({
     const sizeClass = size === 'mini' ? 'card-mini' : 'card-small';
     const colorClass = suitColors[suit] || 'text-gray-800';
     
-    // Responsive text sizing - MUCH BIGGER on mobile for readability
+    // Responsive text sizing - MUCH BIGGER on mobile for readability, capped for balance
     const rankSizeClass = size === 'mini' 
-        ? 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-none'
+        ? 'text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-bold leading-none'
         : 'text-3xl md:text-4xl font-bold leading-none';
     const suitSizeClass = size === 'mini'
-        ? 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-none'
+        ? 'text-3xl sm:text-4xl md:text-4xl lg:text-5xl leading-none'
         : 'text-4xl md:text-5xl leading-none';
     
     return (
@@ -92,7 +92,7 @@ export default function Card({
             
             {/* Printed Joker Label */}
             {isPrintedJoker && (
-                <div className="absolute bottom-0.5 text-[0.5rem] sm:text-xs font-semibold text-purple-600">
+                <div className="absolute bottom-0.5 text-xs font-semibold text-purple-600">
                     JOKER
                 </div>
             )}

@@ -75,10 +75,11 @@ export default function HandBar({ hand, selectedCardId, onCardSelect, onReorder 
                             ${index > 0 ? '-ml-10 sm:-ml-8 md:-ml-6' : ''} 
                             ${dragOverIndex === index && draggedCardId !== card.id ? 'ml-2 sm:ml-4' : ''}
                             ${draggedCardId === card.id ? 'opacity-50' : 'opacity-100'}
-                            ${selectedCardId === card.id ? 'z-50 -ml-8 mr-2' : `z-${Math.max(0, 40 - index)}`}
+                            ${selectedCardId === card.id ? 'z-50 -ml-8 mr-2' : ''}
                         `}
                         style={{ 
-                            transform: selectedCardId === card.id ? 'translateY(-12px)' : 'none'
+                            transform: selectedCardId === card.id ? 'translateY(-12px)' : 'none',
+                            zIndex: selectedCardId === card.id ? 50 : Math.max(0, 40 - index)
                         }}
                         onDragOver={(e) => handleDragOver(e, index)}
                         onDrop={(e) => handleDrop(e, index)}

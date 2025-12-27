@@ -214,7 +214,7 @@ export default function Game() {
                         </div>
                         {gameState.wildJokerRank && (
                             <div className="text-center bg-yellow-500 text-black px-2 py-1 rounded-lg">
-                                <div className="text-[0.65rem] font-semibold">Wild Joker</div>
+                                <div className="text-xs font-semibold">Wild Joker</div>
                                 <div className="text-base font-bold">{gameState.wildJokerRank}</div>
                             </div>
                         )}
@@ -300,7 +300,7 @@ export default function Game() {
                 <div className="px-2 pb-2">
                     <div className="bg-white/90 rounded-lg p-2 shadow">
                         <div className="text-xs text-gray-600">Your Hand ({playerHand.length} cards)</div>
-                        <div className="text-[0.65rem] text-gray-500 mt-0.5">
+                        <div className="text-xs text-gray-500 mt-0.5">
                             {hasDrawn ? '✓ Drawn - Select a card to discard' : 'Draw a card to continue'}
                         </div>
                     </div>
