@@ -112,38 +112,30 @@
   }
   
   .card-mini {
-    /* Mobile-first: MUCH LARGER for readability - uses overlapping layout */
-    width: 4rem;     /* 64px - minimum readable size */
-    height: 6rem;    /* 96px - maintains card aspect ratio */
+    /* Mobile-first: Sized to fit 7 cards in a row without overlap */
+    width: 3rem;     /* 48px - fits 7 cards on small screens */
+    height: 4.5rem;  /* 72px - maintains 3:2 aspect ratio */
   }
   
-  /* iPhone SE and small phones (375px+) */
-  @media (min-width: 375px) {
+  /* Responsive card sizing - larger on bigger screens */
+  @media (min-width: 640px) {
+    .card-mini {
+      width: 4rem;     /* 64px */
+      height: 6rem;    /* 96px */
+    }
+  }
+  
+  @media (min-width: 768px) {
     .card-mini {
       width: 4.5rem;   /* 72px */
       height: 6.75rem; /* 108px */
     }
   }
   
-  /* Responsive card sizing - even larger on bigger screens */
-  @media (min-width: 640px) {
+  @media (min-width: 1024px) {
     .card-mini {
       width: 5rem;     /* 80px */
       height: 7.5rem;  /* 120px */
-    }
-  }
-  
-  @media (min-width: 768px) {
-    .card-mini {
-      width: 5.5rem;   /* 88px */
-      height: 8rem;    /* 128px */
-    }
-  }
-  
-  @media (min-width: 1024px) {
-    .card-mini {
-      width: 6rem;     /* 96px */
-      height: 8.5rem;  /* 136px */
     }
   }
   
@@ -189,11 +181,11 @@
   /* Fixed Bottom Bars */
   .hand-bar {
     position: fixed;
-    bottom: 5rem;  /* Increased from 4rem to 5rem for more clearance */
+    bottom: 5rem;  /* Clearance for action bar */
     left: 0;
     right: 0;
     background: linear-gradient(to top, rgba(17, 24, 39, 0.95), transparent);
-    padding: 0.5rem 0.25rem;  /* Reduced padding for more space */
+    padding: 0.5rem 0;  /* Vertical padding for two-row layout */
     animation: slideInFromBottom 0.4s ease-out;
   }
   
