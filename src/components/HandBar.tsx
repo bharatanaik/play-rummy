@@ -13,9 +13,13 @@ export default function HandBar({ hand, selectedCardId, onCardSelect, onReorder 
     const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
     const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
+    // Constants for layout
+    const CARDS_PER_ROW = 7;
+    const DRAG_SPACING = 'ml-2';
+
     // Split hand into two rows
-    const topRow = hand.slice(0, 7);
-    const bottomRow = hand.slice(7);
+    const topRow = hand.slice(0, CARDS_PER_ROW);
+    const bottomRow = hand.slice(CARDS_PER_ROW);
 
     const handleDragStart = (e: React.DragEvent, cardId: string, index: number) => {
         setDraggedCardId(cardId);
@@ -78,7 +82,7 @@ export default function HandBar({ hand, selectedCardId, onCardSelect, onReorder 
                             key={card.id}
                             className={`
                                 shrink-0 transition-all duration-200
-                                ${dragOverIndex === index && draggedCardId !== card.id ? 'ml-2' : ''}
+                                ${dragOverIndex === index && draggedCardId !== card.id ? DRAG_SPACING : ''}
                                 ${draggedCardId === card.id ? 'opacity-50' : 'opacity-100'}
                             `}
                             style={{ 
@@ -104,13 +108,13 @@ export default function HandBar({ hand, selectedCardId, onCardSelect, onReorder 
                 {/* Bottom row - 6 or 7 cards */}
                 <div className="flex justify-center gap-1">
                     {bottomRow.map((card, index) => {
-                        const actualIndex = index + 7;
+                        const actualIndex = index + CARDS_PER_ROW;
                         return (
                             <div
                                 key={card.id}
                                 className={`
                                     shrink-0 transition-all duration-200
-                                    ${dragOverIndex === actualIndex && draggedCardId !== card.id ? 'ml-2' : ''}
+                                    ${dragOverIndex === actualIndex && draggedCardId !== card.id ? DRAG_SPACING : ''}
                                     ${draggedCardId === card.id ? 'opacity-50' : 'opacity-100'}
                                 `}
                                 style={{ 
