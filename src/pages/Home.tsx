@@ -55,11 +55,12 @@ export default function Login () {
             } else {
                 await signInWithEmail(email, password);
             }
-        } catch (err: any) {
+        } catch (err) {
             // Parse Firebase error messages
-            const errorMessage = err.code 
-                ? err.code.replace('auth/', '').replace(/-/g, ' ')
-                : err.message || 'Authentication failed';
+            const error = err as { code?: string; message?: string };
+            const errorMessage = error.code 
+                ? error.code.replace('auth/', '').replace(/-/g, ' ')
+                : error.message || 'Authentication failed';
             setError(errorMessage);
         } finally {
             setIsLoading(false);

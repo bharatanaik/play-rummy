@@ -42,14 +42,15 @@ export default function Game() {
 
     // Subscribe to game state updates
     useEffect(() => {
-        if (!gameId) return;
+        if (!gameId || !player?.uid) return;
 
         const unsubscribe = gameService.subscribeToGame(gameId, (state) => {
             setGameState(state);
             
             // Initialize/update hand order when game state changes
-            if (state?.players[player.uid!]?.hand) {
-                setMyHandOrder(state.players[player.uid!].hand);
+            const playerHand = state?.players[player.uid!]?.hand;
+            if (playerHand) {
+                setMyHandOrder(playerHand);
             }
             
             // Show score modal when game is completed and scores are available
@@ -63,7 +64,7 @@ export default function Game() {
         });
 
         return () => unsubscribe();
-    }, [gameId, player.uid]);
+    }, [gameId, player?.uid]);
 
     // Handle draw from closed pile
     const handleDrawClosed = async () => {
