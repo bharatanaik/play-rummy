@@ -1,14 +1,13 @@
 // src/context/AuthContext.tsx
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { 
-    type User, 
-    onAuthStateChanged, 
-    signInWithRedirect, 
-    getRedirectResult, 
+import {
+    type User,
+    onAuthStateChanged,
     signOut,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
-    updateProfile
+    updateProfile,
+    signInWithPopup
 } from 'firebase/auth';
 import { auth, provider } from '../firebase/config';
 import { useNavigate } from 'react-router';
@@ -34,12 +33,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const signInWithGoogle = async () => {
         try {
-            await signInWithRedirect(auth, provider);
+            const result = await signInWithPopup(auth, provider);
+            console.log('Google sign-in successful:', result.user);
         } catch (error) {
-            console.error("Google sign-in error:", error);
+            console.error('Google sign-in error:', error);
             throw error;
         }
     };
+
 
     const signUpWithEmail = async (email: string, password: string, displayName: string) => {
         try {
@@ -72,28 +73,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    // Check for redirect result on mount
-    useEffect(() => {
-        const checkRedirectResult = async () => {
-            try {
-                const result = await getRedirectResult(auth);
-                if (result?.user) {
-                    console.log('Sign-in successful via redirect:', result.user);
-                }
-            } catch (error) {
-                console.error("Redirect result error:", error);
-            }
-        };
-        
-        checkRedirectResult();
-    }, []);;
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             console.log(currentUser);
-            
+
             setUser(currentUser);
-            
+
             setPlayer({
                 uid: currentUser?.uid || null,
                 name: currentUser?.displayName || null,

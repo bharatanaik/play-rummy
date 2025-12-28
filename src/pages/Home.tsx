@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 
 export default function Login () {
     const {signInWithGoogle, signInWithEmail, signUpWithEmail, user, loading} = useAuth();
+    
+
     const navigate = useNavigate();
     const location = useLocation();
     const [isRedirecting, setIsRedirecting] = useState(false);
