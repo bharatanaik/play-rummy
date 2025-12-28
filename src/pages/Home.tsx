@@ -56,11 +56,29 @@ export default function Login () {
                 await signInWithEmail(email, password);
             }
         } catch (err) {
-            // Parse Firebase error messages
+            // Parse Firebase error messages to user-friendly format
             const error = err as { code?: string; message?: string };
-            const errorMessage = error.code 
-                ? error.code.replace('auth/', '').replace(/-/g, ' ')
-                : error.message || 'Authentication failed';
+            let errorMessage = 'Authentication failed';
+            
+            if (error.code) {
+                // Map common Firebase auth errors to user-friendly messages
+                const errorMap: Record<string, string> = {
+                    'auth/email-already-in-use': 'This email is already registered',
+                    'auth/invalid-email': 'Invalid email address',
+                    'auth/operation-not-allowed': 'Email/password sign-in is not enabled',
+                    'auth/weak-password': 'Password is too weak',
+                    'auth/user-disabled': 'This account has been disabled',
+                    'auth/user-not-found': 'No account found with this email',
+                    'auth/wrong-password': 'Incorrect password',
+                    'auth/invalid-credential': 'Invalid email or password',
+                    'auth/too-many-requests': 'Too many attempts. Please try again later',
+                };
+                
+                errorMessage = errorMap[error.code] || error.code.replace('auth/', '').replace(/-/g, ' ');
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            
             setError(errorMessage);
         } finally {
             setIsLoading(false);
