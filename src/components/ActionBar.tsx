@@ -19,7 +19,7 @@ export default function ActionBar({
 }: ActionBarProps) {
     return (
         <div className="action-bar p-2 safe-area-bottom">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 max-w-4xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 max-w-3xl mx-auto">
                 {/* Draw from Closed Pile */}
                 <button
                     onClick={onDrawClosed}

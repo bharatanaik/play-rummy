@@ -66,16 +66,15 @@ export default function HandBar({ hand, selectedCardId, onCardSelect, onReorder 
 
     return (
         <div className="hand-bar">
-            <div className="flex gap-0 overflow-x-auto hide-scrollbar pb-2 px-2 justify-start md:justify-center">
+            <div className="flex py-6 px-2 justify-start md:justify-center">
                 {hand.map((card, index) => (
                     <div
                         key={card.id}
                         className={`
-                            flex-shrink-0 transition-all duration-200
-                            ${index > 0 ? '-ml-10 sm:-ml-8 md:-ml-6' : ''} 
+                             transition-all duration-200
                             ${dragOverIndex === index && draggedCardId !== card.id ? 'ml-2 sm:ml-4' : ''}
                             ${draggedCardId === card.id ? 'opacity-50' : 'opacity-100'}
-                            ${selectedCardId === card.id ? 'z-50 -ml-8 mr-2' : ''}
+                            ${selectedCardId === card.id ? 'mx-2' : ''}
                         `}
                         style={{ 
                             transform: selectedCardId === card.id ? 'translateY(-12px)' : 'none',

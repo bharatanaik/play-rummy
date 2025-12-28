@@ -233,7 +233,7 @@ export default function Game() {
     const isMyTurn = gameState.currentTurn === player.uid;
     const hasDrawn = currentPlayer?.hasDrawn || false;
     const playerHand = currentPlayer?.hand || [];
-    const topOpenCard = gameState.openPile.at(-1);
+    const topOpenCard = gameState.openPile?.at(-1);
     
     // Use local hand order for display, fallback to server hand
     const displayHand = myHandOrder.length > 0 ? myHandOrder : playerHand;

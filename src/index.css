@@ -113,8 +113,8 @@
   
   .card-mini {
     /* Mobile-first: MUCH LARGER for readability - uses overlapping layout */
-    width: 4rem;     /* 64px - minimum readable size */
-    height: 6rem;    /* 96px - maintains card aspect ratio */
+    width: 3rem;     /* 64px - minimum readable size */
+    height: 5rem;    /* 96px - maintains card aspect ratio */
   }
   
   /* iPhone SE and small phones (375px+) */
@@ -189,12 +189,14 @@
   /* Fixed Bottom Bars */
   .hand-bar {
     position: fixed;
-    bottom: 5rem;  /* Increased from 4rem to 5rem for more clearance */
+    bottom: 6rem;  /* Increased from 4rem to 5rem for more clearance */
     left: 0;
     right: 0;
     background: linear-gradient(to top, rgba(17, 24, 39, 0.95), transparent);
     padding: 0.5rem 0.25rem;  /* Reduced padding for more space */
     animation: slideInFromBottom 0.4s ease-out;
+    border: 3px solid red;
+    
   }
   
   /* Center hand bar on desktop with max width */

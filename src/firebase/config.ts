@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { connectDatabaseEmulator, getDatabase } from "firebase/database";
+import { getDatabase } from "firebase/database";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 
@@ -27,7 +27,7 @@ const provider = new GoogleAuthProvider();
 // If in development environment (localhost) then use emulator
 if (location.hostname === "localhost") {
 	console.log("Connecting to local firebase emulator");
-	connectDatabaseEmulator(db, "127.0.0.1", 9000);
+	// connectDatabaseEmulator(db, "127.0.0.1", 9000);
 	// connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
 }
 
