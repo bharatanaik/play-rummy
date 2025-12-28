@@ -66,7 +66,7 @@ class GameService {
             if (player.uid) {
                 playersWithHands[player.uid] = {
                     ...player,
-                    hand: deckService.sortHand(hands[index]),
+                    hand: hands[index],
                     score: 0,
                     hasDrawn: false,
                     hasDeclared: false,
@@ -150,7 +150,7 @@ class GameService {
             
             // Update game state atomically
             gameState.closedPile = newClosedPile;
-            gameState.players[playerId].hand = deckService.sortHand(playerHand);
+            gameState.players[playerId].hand = playerHand;
             gameState.players[playerId].hasDrawn = true;
 
             console.log('[DRAW] Closed pile after:', newClosedPile.length, 'cards');
@@ -215,7 +215,7 @@ class GameService {
             
             // Update game state atomically
             gameState.openPile = newOpenPile;
-            gameState.players[playerId].hand = deckService.sortHand(playerHand);
+            gameState.players[playerId].hand = playerHand;
             gameState.players[playerId].hasDrawn = true;
 
             console.log('[DRAW] Open pile after:', newOpenPile.length, 'cards');
@@ -290,7 +290,7 @@ class GameService {
             
             // Update game state atomically
             gameState.openPile = newOpenPile;
-            gameState.players[playerId].hand = deckService.sortHand(newHand);
+            gameState.players[playerId].hand = newHand;
             gameState.players[playerId].hasDrawn = false;
             gameState.currentTurn = nextPlayerId;
 
