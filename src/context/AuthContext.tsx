@@ -1,6 +1,15 @@
 // src/context/AuthContext.tsx
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { type User, onAuthStateChanged, signInWithRedirect, getRedirectResult, signOut} from 'firebase/auth';
+import { 
+    type User, 
+    onAuthStateChanged, 
+    signInWithRedirect, 
+    getRedirectResult, 
+    signOut,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    updateProfile
+} from 'firebase/auth';
 import { auth, provider } from '../firebase/config';
 import { useNavigate } from 'react-router';
 import type { Player } from '../model';
@@ -10,6 +19,8 @@ interface AuthContextType {
     player: Player | null;
     loading: boolean;
     signInWithGoogle: () => Promise<void>;
+    signInWithEmail: (email: string, password: string) => Promise<void>;
+    signUpWithEmail: (email: string, password: string, displayName: string) => Promise<void>;
     logout: () => Promise<void>;
 }
 
@@ -26,6 +37,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             await signInWithRedirect(auth, provider);
         } catch (error) {
             console.error("Google sign-in error:", error);
+            throw error;
+        }
+    };
+
+    const signUpWithEmail = async (email: string, password: string, displayName: string) => {
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            // Update profile with display name
+            await updateProfile(userCredential.user, {
+                displayName: displayName
+            });
+        } catch (error) {
+            console.error("Email sign-up error:", error);
+            throw error;
+        }
+    };
+
+    const signInWithEmail = async (email: string, password: string) => {
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+        } catch (error) {
+            console.error("Email sign-in error:", error);
+            throw error;
         }
     };
 
@@ -77,6 +111,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         player,
         loading,
         signInWithGoogle,
+        signInWithEmail,
+        signUpWithEmail,
         logout,
     };
 

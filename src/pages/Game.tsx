@@ -29,6 +29,9 @@ export default function Game() {
     const [isDragOverDiscard, setIsDragOverDiscard] = useState(false);
     const [showDeclareModal, setShowDeclareModal] = useState(false);
     const [showScoreModal, setShowScoreModal] = useState(false);
+    const [organizeMode, setOrganizeMode] = useState(false);
+    const [firstSelectedCard, setFirstSelectedCard] = useState<string | null>(null);
+    const [myHandOrder, setMyHandOrder] = useState<typeof playerHand>([]);
 
     // Guard: must be authenticated and have a gameId
     useEffect(() => {
@@ -44,6 +47,11 @@ export default function Game() {
         const unsubscribe = gameService.subscribeToGame(gameId, (state) => {
             setGameState(state);
             
+            // Initialize/update hand order when game state changes
+            if (state?.players[player.uid!]?.hand) {
+                setMyHandOrder(state.players[player.uid!].hand);
+            }
+            
             // Show score modal when game is completed and scores are available
             if (state?.status === 'completed' && state.scores && state.scores.length > 0) {
                 setShowScoreModal(true);
@@ -55,7 +63,7 @@ export default function Game() {
         });
 
         return () => unsubscribe();
-    }, [gameId]);
+    }, [gameId, player.uid]);
 
     // Handle draw from closed pile
     const handleDrawClosed = async () => {
@@ -121,7 +129,33 @@ export default function Game() {
 
     // Handle card selection
     const handleCardSelect = (cardId: string) => {
-        setSelectedCardId(cardId === selectedCardId ? null : cardId);
+        if (organizeMode) {
+            // In organize mode: swap cards
+            if (!firstSelectedCard) {
+                // First card selected
+                setFirstSelectedCard(cardId);
+            } else if (firstSelectedCard === cardId) {
+                // Deselect if clicking same card
+                setFirstSelectedCard(null);
+            } else {
+                // Second card selected - swap them
+                const newHand = [...myHandOrder];
+                const idx1 = newHand.findIndex(c => c.id === firstSelectedCard);
+                const idx2 = newHand.findIndex(c => c.id === cardId);
+                
+                if (idx1 !== -1 && idx2 !== -1) {
+                    // Swap
+                    [newHand[idx1], newHand[idx2]] = [newHand[idx2], newHand[idx1]];
+                    setMyHandOrder(newHand);
+                }
+                
+                // Clear selection
+                setFirstSelectedCard(null);
+            }
+        } else {
+            // Normal mode: select for discard
+            setSelectedCardId(cardId === selectedCardId ? null : cardId);
+        }
     };
 
     // Handle drag-to-discard
@@ -178,12 +212,10 @@ export default function Game() {
     };
 
     // Handle hand reordering (local only - not synced to server)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const handleHandReorder = (_reorderedHand: typeof playerHand) => {
-        // Note: Hand reordering is currently local-only and not persisted
-        // The server maintains the canonical order
-        // Future enhancement: Could save preference to localStorage if needed
-        console.log('Hand reordered locally');
+    const handleHandReorder = (reorderedHand: typeof playerHand) => {
+        // Update local hand order
+        setMyHandOrder(reorderedHand);
+        console.log('Hand reordered via drag and drop');
     };
 
     if (!player || !gameId) return null;
@@ -201,9 +233,40 @@ export default function Game() {
     const hasDrawn = currentPlayer?.hasDrawn || false;
     const playerHand = currentPlayer?.hand || [];
     const topOpenCard = gameState.openPile.at(-1);
+    
+    // Use local hand order for display, fallback to server hand
+    const displayHand = myHandOrder.length > 0 ? myHandOrder : playerHand;
 
     return (
         <div className="game-table pb-24">
+            {/* Organize Mode Button */}
+            <button 
+                onClick={() => {
+                    setOrganizeMode(!organizeMode);
+                    setFirstSelectedCard(null);
+                    setSelectedCardId(null);
+                }}
+                className={`
+                    fixed top-20 right-4 z-20 px-4 py-2 rounded-full shadow-lg
+                    transition-all duration-200
+                    ${organizeMode 
+                        ? 'bg-yellow-500 text-white' 
+                        : 'bg-white text-gray-800 hover:bg-gray-100'
+                    }
+                `}
+            >
+                {organizeMode ? '✓ Done' : '⚙️ Organize'}
+            </button>
+
+            {/* Mode Indicator */}
+            {organizeMode && (
+                <div className="fixed top-32 left-0 right-0 text-center z-10">
+                    <span className="bg-yellow-500 text-white px-4 py-2 rounded-full text-sm shadow-lg inline-block">
+                        Tap two cards to swap positions
+                    </span>
+                </div>
+            )}
+
             <div className="max-w-7xl mx-auto">
                 {/* Header - COMPACT */}
                 <div className="bg-green-900/80 text-white p-2 shadow-lg">
@@ -309,8 +372,8 @@ export default function Game() {
 
             {/* Hand Bar - Fixed at bottom above action bar */}
             <HandBar
-                hand={playerHand}
-                selectedCardId={selectedCardId}
+                hand={displayHand}
+                selectedCardId={organizeMode ? firstSelectedCard : selectedCardId}
                 onCardSelect={handleCardSelect}
                 onReorder={handleHandReorder}
             />
@@ -329,7 +392,7 @@ export default function Game() {
             {/* Declare Modal */}
             {showDeclareModal && (
                 <DeclareModal
-                    hand={playerHand}
+                    hand={displayHand}
                     onDeclare={handleDeclareSubmit}
                     onClose={() => setShowDeclareModal(false)}
                 />
