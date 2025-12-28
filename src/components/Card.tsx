@@ -52,12 +52,12 @@ export default function Card({
     const sizeClass = size === 'mini' ? 'card-mini' : 'card-small';
     const colorClass = suitColors[suit] || 'text-gray-800';
     
-    // Responsive text sizing - MUCH BIGGER on mobile for readability, capped for balance
+    // Responsive text sizing - smaller on mobile for two-row layout, larger on desktop
     const rankSizeClass = size === 'mini' 
-        ? 'text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-bold leading-none'
+        ? 'text-lg sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-none'
         : 'text-3xl md:text-4xl font-bold leading-none';
     const suitSizeClass = size === 'mini'
-        ? 'text-3xl sm:text-4xl md:text-4xl lg:text-5xl leading-none'
+        ? 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl leading-none'
         : 'text-4xl md:text-5xl leading-none';
     
     return (

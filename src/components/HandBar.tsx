@@ -13,6 +13,10 @@ export default function HandBar({ hand, selectedCardId, onCardSelect, onReorder 
     const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
     const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
+    // Split hand into two rows
+    const topRow = hand.slice(0, 7);
+    const bottomRow = hand.slice(7);
+
     const handleDragStart = (e: React.DragEvent, cardId: string, index: number) => {
         setDraggedCardId(cardId);
         e.dataTransfer.effectAllowed = 'move';
@@ -66,35 +70,69 @@ export default function HandBar({ hand, selectedCardId, onCardSelect, onReorder 
 
     return (
         <div className="hand-bar">
-            <div className="flex gap-0 overflow-x-auto hide-scrollbar pb-2 px-2 justify-start md:justify-center">
-                {hand.map((card, index) => (
-                    <div
-                        key={card.id}
-                        className={`
-                            flex-shrink-0 transition-all duration-200
-                            ${index > 0 ? '-ml-10 sm:-ml-8 md:-ml-6' : ''} 
-                            ${dragOverIndex === index && draggedCardId !== card.id ? 'ml-2 sm:ml-4' : ''}
-                            ${draggedCardId === card.id ? 'opacity-50' : 'opacity-100'}
-                            ${selectedCardId === card.id ? 'z-50 -ml-8 mr-2' : ''}
-                        `}
-                        style={{ 
-                            transform: selectedCardId === card.id ? 'translateY(-12px)' : 'none',
-                            zIndex: selectedCardId === card.id ? 50 : Math.max(0, 40 - index)
-                        }}
-                        onDragOver={(e) => handleDragOver(e, index)}
-                        onDrop={(e) => handleDrop(e, index)}
-                    >
-                        <Card
-                            {...card}
-                            isSelected={selectedCardId === card.id}
-                            onClick={() => onCardSelect(card.id)}
-                            size="mini"
-                            draggable={true}
-                            onDragStart={(e) => handleDragStart(e, card.id, index)}
-                            onDragEnd={handleDragEnd}
-                        />
-                    </div>
-                ))}
+            <div className="px-2 pb-2">
+                {/* Top row - 7 cards */}
+                <div className="flex justify-center gap-1 mb-1">
+                    {topRow.map((card, index) => (
+                        <div
+                            key={card.id}
+                            className={`
+                                shrink-0 transition-all duration-200
+                                ${dragOverIndex === index && draggedCardId !== card.id ? 'ml-2' : ''}
+                                ${draggedCardId === card.id ? 'opacity-50' : 'opacity-100'}
+                            `}
+                            style={{ 
+                                transform: selectedCardId === card.id ? 'translateY(-12px)' : 'none',
+                                zIndex: selectedCardId === card.id ? 50 : 10
+                            }}
+                            onDragOver={(e) => handleDragOver(e, index)}
+                            onDrop={(e) => handleDrop(e, index)}
+                        >
+                            <Card
+                                {...card}
+                                isSelected={selectedCardId === card.id}
+                                onClick={() => onCardSelect(card.id)}
+                                size="mini"
+                                draggable={true}
+                                onDragStart={(e) => handleDragStart(e, card.id, index)}
+                                onDragEnd={handleDragEnd}
+                            />
+                        </div>
+                    ))}
+                </div>
+
+                {/* Bottom row - 6 or 7 cards */}
+                <div className="flex justify-center gap-1">
+                    {bottomRow.map((card, index) => {
+                        const actualIndex = index + 7;
+                        return (
+                            <div
+                                key={card.id}
+                                className={`
+                                    shrink-0 transition-all duration-200
+                                    ${dragOverIndex === actualIndex && draggedCardId !== card.id ? 'ml-2' : ''}
+                                    ${draggedCardId === card.id ? 'opacity-50' : 'opacity-100'}
+                                `}
+                                style={{ 
+                                    transform: selectedCardId === card.id ? 'translateY(-12px)' : 'none',
+                                    zIndex: selectedCardId === card.id ? 50 : 10
+                                }}
+                                onDragOver={(e) => handleDragOver(e, actualIndex)}
+                                onDrop={(e) => handleDrop(e, actualIndex)}
+                            >
+                                <Card
+                                    {...card}
+                                    isSelected={selectedCardId === card.id}
+                                    onClick={() => onCardSelect(card.id)}
+                                    size="mini"
+                                    draggable={true}
+                                    onDragStart={(e) => handleDragStart(e, card.id, actualIndex)}
+                                    onDragEnd={handleDragEnd}
+                                />
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );
